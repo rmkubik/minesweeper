@@ -26,6 +26,7 @@ const MapContainer = styled.div`
 `;
 
 const TILES_WIDE = 15;
+const TILES_HIGH = 15;
 
 const Map = ({ tiles, revealTile }) => {
   return (
@@ -97,24 +98,31 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
+const DOOR = "🚪";
+const BOMB = "💣";
+const GOLD = "💰";
+const EMPTY = "";
+
 function isTileEmpty(tile) {
-  return tile.icon !== "💣" && tile.icon !== "💰" && tile.icon !== "🚪";
+  return tile.icon !== BOMB && tile.icon !== GOLD && tile.icon !== DOOR;
 }
 
-const door = "🚪";
+function isTileDangerous(tile) {
+  return tile.icon === BOMB;
+}
 
 const pickTile = () => {
   const choice = Math.floor(Math.random() * 100);
 
-  if (choice < 15) {
-    return "💣";
+  if (choice < 20) {
+    return BOMB;
   }
 
-  if (choice < 30) {
-    return "💰";
+  if (choice < 40) {
+    return GOLD;
   }
 
-  return "";
+  return EMPTY;
 };
 
 const countNeighboringIcons = (tile, location, tiles) => {
@@ -123,7 +131,7 @@ const countNeighboringIcons = (tile, location, tiles) => {
   const neighborIconCounts = neighbors.reduce((count, neighborLocation) => {
     const neighbor = getLocation(tiles, neighborLocation);
 
-    if (!isTileEmpty(neighbor)) {
+    if (isTileDangerous(neighbor)) {
       return count + 1;
     }
 
@@ -133,16 +141,28 @@ const countNeighboringIcons = (tile, location, tiles) => {
   return neighborIconCounts;
 };
 
+const placeDoor = tiles => {
+  const row = Math.floor(Math.random() * TILES_HIGH);
+  const col = Math.floor(Math.random() * TILES_WIDE);
+
+  return updateMatrix({ row, col }, { icon: DOOR, revealed: false }, tiles);
+};
+
 const App = () => {
   const [tiles, setTiles] = useState([]);
+  const [gold, setGold] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [foundDoor, setFoundDoor] = useState(false);
 
   useEffect(() => {
     const generatedTiles = constructMatrix(
       () => {
         return { icon: pickTile(), revealed: false };
       },
-      { width: TILES_WIDE, height: 15 }
+      { width: TILES_WIDE, height: TILES_HIGH }
     );
+
+    const doorPlacedTiles = placeDoor(generatedTiles);
 
     const numbersAddedTiles = mapMatrix((tile, location, tiles) => {
       if (!isTileEmpty(tile)) {
@@ -162,13 +182,25 @@ const App = () => {
         ...tile,
         icon: "" + neighborIconCounts
       };
-    }, generatedTiles);
+    }, doorPlacedTiles);
 
     setTiles(numbersAddedTiles);
   }, []);
 
   const revealTile = location => {
     const tile = getLocation(tiles, location);
+
+    switch (tile.icon) {
+      case GOLD:
+        setGold(gold + 1);
+        break;
+      case BOMB:
+        setLives(lives - 1);
+        break;
+      case DOOR:
+        setFoundDoor(true);
+        break;
+    }
 
     const connectedEmptyLocations = floodFill(
       getNeighbors(getCrossDirections),
@@ -179,7 +211,7 @@ const App = () => {
       []
     );
 
-    // reveal clicked tilef
+    // reveal clicked tiles
     let newTiles = updateMatrix(location, { ...tile, revealed: true }, tiles);
 
     // reveal all connected empty tiles
@@ -200,6 +232,9 @@ const App = () => {
     <>
       <GlobalStyle />
       <Map tiles={tiles} revealTile={revealTile} />
+      <p>Gold: {gold}</p>
+      <p>Lives: {lives}</p>
+      <p>{foundDoor ? "You found the exit!" : ""}</p>
     </>
   );
 };
