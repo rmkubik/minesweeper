@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import styled, { createGlobalStyle } from "styled-components";
 import {
@@ -9,7 +9,8 @@ import {
   constructMatrix,
   floodFill,
   getNeighbors,
-  getCrossDirections
+  getCrossDirections,
+  getAllDirections
 } from "functional-game-utils";
 
 const MapContainer = styled.div`
@@ -94,6 +95,10 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
+function isTileEmpty(tile) {
+  return tile.icon !== "💣" && tile.icon !== "💰" && tile.icon !== "🚪";
+}
+
 const door = "🚪";
 
 const pickTile = () => {
@@ -110,38 +115,65 @@ const pickTile = () => {
   return "";
 };
 
+const countNeighboringIcons = (tile, location, tiles) => {
+  const neighbors = getNeighbors(getAllDirections, tiles, location);
+
+  const neighborIconCounts = neighbors.reduce((count, neighborLocation) => {
+    const neighbor = getLocation(tiles, neighborLocation);
+
+    if (!isTileEmpty(neighbor)) {
+      return count + 1;
+    }
+
+    return count;
+  }, 0);
+
+  return neighborIconCounts;
+};
+
 const App = () => {
-  const [tiles, setTiles] = useState(
-    constructMatrix(
+  const [tiles, setTiles] = useState([]);
+
+  useEffect(() => {
+    const generatedTiles = constructMatrix(
       () => {
         return { icon: pickTile(), revealed: false };
       },
       { width: 10, height: 10 }
-    )
-  );
+    );
+
+    const numbersAddedTiles = mapMatrix((tile, location, tiles) => {
+      if (!isTileEmpty(tile)) {
+        return tile;
+      }
+
+      return {
+        ...tile,
+        icon: "" + countNeighboringIcons(tile, location, tiles)
+      };
+    }, generatedTiles);
+
+    setTiles(numbersAddedTiles);
+  }, []);
 
   const revealTile = location => {
     const tile = getLocation(tiles, location);
 
     const connectedEmptyLocations = floodFill(
       getNeighbors(getCrossDirections),
-      tile => {
-        if (tile.icon === "") return true;
-      }, // use identity function as checkLocation so location values determine if they should be found
+      isTileEmpty,
       tiles,
       [location],
       [],
       []
     );
 
-    // reveal clicked tile
+    // reveal clicked tilef
     let newTiles = updateMatrix(location, { ...tile, revealed: true }, tiles);
-
-    // console.log(connectedEmptyLocations);
 
     // reveal all connected empty tiles
     connectedEmptyLocations.forEach(emptyLocation => {
-      const emptyTile = getLocation(emptyLocation);
+      const emptyTile = getLocation(tiles, emptyLocation);
 
       newTiles = updateMatrix(
         emptyLocation,
