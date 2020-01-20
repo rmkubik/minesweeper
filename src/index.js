@@ -6,7 +6,10 @@ import {
   mapMatrix,
   updateMatrix,
   getLocation,
-  constructMatrix
+  constructMatrix,
+  floodFill,
+  getNeighbors,
+  getCrossDirections
 } from "functional-game-utils";
 
 const MapContainer = styled.div`
@@ -120,7 +123,34 @@ const App = () => {
   const revealTile = location => {
     const tile = getLocation(tiles, location);
 
-    setTiles(updateMatrix(location, { ...tile, revealed: true }, tiles));
+    const connectedEmptyLocations = floodFill(
+      getNeighbors(getCrossDirections),
+      tile => {
+        if (tile.icon === "") return true;
+      }, // use identity function as checkLocation so location values determine if they should be found
+      tiles,
+      [location],
+      [],
+      []
+    );
+
+    // reveal clicked tile
+    let newTiles = updateMatrix(location, { ...tile, revealed: true }, tiles);
+
+    // console.log(connectedEmptyLocations);
+
+    // reveal all connected empty tiles
+    connectedEmptyLocations.forEach(emptyLocation => {
+      const emptyTile = getLocation(emptyLocation);
+
+      newTiles = updateMatrix(
+        emptyLocation,
+        { ...emptyTile, revealed: true },
+        newTiles
+      );
+    });
+
+    setTiles(newTiles);
   };
 
   return (
