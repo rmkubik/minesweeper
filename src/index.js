@@ -25,9 +25,11 @@ const MapContainer = styled.div`
   }
 `;
 
+const TILES_WIDE = 15;
+
 const Map = ({ tiles, revealTile }) => {
   return (
-    <MapContainer tileSize={32} width={10}>
+    <MapContainer tileSize={32} width={TILES_WIDE}>
       {mapMatrix(
         (tile, location) => (
           <Tile
@@ -104,11 +106,11 @@ const door = "🚪";
 const pickTile = () => {
   const choice = Math.floor(Math.random() * 100);
 
-  if (choice < 20) {
+  if (choice < 15) {
     return "💣";
   }
 
-  if (choice < 40) {
+  if (choice < 30) {
     return "💰";
   }
 
@@ -139,7 +141,7 @@ const App = () => {
       () => {
         return { icon: pickTile(), revealed: false };
       },
-      { width: 10, height: 10 }
+      { width: TILES_WIDE, height: 15 }
     );
 
     const numbersAddedTiles = mapMatrix((tile, location, tiles) => {
@@ -147,9 +149,18 @@ const App = () => {
         return tile;
       }
 
+      const neighborIconCounts = countNeighboringIcons(tile, location, tiles);
+
+      if (neighborIconCounts === 0) {
+        return {
+          ...tile,
+          icon: ""
+        };
+      }
+
       return {
         ...tile,
-        icon: "" + countNeighboringIcons(tile, location, tiles)
+        icon: "" + neighborIconCounts
       };
     }, generatedTiles);
 
