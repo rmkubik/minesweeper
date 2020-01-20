@@ -28,7 +28,13 @@ const MapContainer = styled.div`
 const TILES_WIDE = 15;
 const TILES_HIGH = 15;
 
-const Map = ({ tiles, revealTile }) => {
+const DOOR = "🚪";
+const BOMB = "💣";
+const GOLD = "💰";
+const EMPTY = "";
+const FLAG = "🚩";
+
+const Map = ({ tiles, revealTile, markTile }) => {
   return (
     <MapContainer tileSize={32} width={TILES_WIDE}>
       {mapMatrix(
@@ -37,6 +43,7 @@ const Map = ({ tiles, revealTile }) => {
             key={location.row * 10 + location.col}
             revealTile={revealTile}
             location={location}
+            markTile={markTile}
             {...tile}
           />
         ),
@@ -80,16 +87,32 @@ const TileContainer = styled.span`
         `}
 `;
 
-const Tile = ({ icon, revealed, revealTile, location }) => (
-  <TileContainer
-    revealed={revealed}
-    onClick={() => {
-      revealTile(location);
-    }}
-  >
-    {revealed ? icon : ""}
-  </TileContainer>
-);
+const Tile = ({ icon, revealed, revealTile, location, flagged, markTile }) => {
+  let displayIcon = "";
+
+  if (flagged) {
+    displayIcon = FLAG;
+  }
+
+  if (revealed) {
+    displayIcon = icon;
+  }
+
+  return (
+    <TileContainer
+      revealed={revealed}
+      onClick={event => {
+        revealTile(location);
+      }}
+      onContextMenu={event => {
+        event.preventDefault();
+        markTile(location);
+      }}
+    >
+      {displayIcon}
+    </TileContainer>
+  );
+};
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -97,11 +120,6 @@ const GlobalStyle = createGlobalStyle`
     font-family: Helvetica, Arial, sans-serif;
   }
 `;
-
-const DOOR = "🚪";
-const BOMB = "💣";
-const GOLD = "💰";
-const EMPTY = "";
 
 function isTileEmpty(tile) {
   return tile.icon !== BOMB && tile.icon !== GOLD && tile.icon !== DOOR;
@@ -228,10 +246,16 @@ const App = () => {
     setTiles(newTiles);
   };
 
+  const markTile = location => {
+    const tile = getLocation(tiles, location);
+
+    setTiles(updateMatrix(location, { ...tile, flagged: true }, tiles));
+  };
+
   return (
     <>
       <GlobalStyle />
-      <Map tiles={tiles} revealTile={revealTile} />
+      <Map tiles={tiles} revealTile={revealTile} markTile={markTile} />
       <p>Gold: {gold}</p>
       <p>Lives: {lives}</p>
       <p>{foundDoor ? "You found the exit!" : ""}</p>
