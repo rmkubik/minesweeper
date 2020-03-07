@@ -50,6 +50,7 @@ const BOMB = "💣";
 const GOLD = "💰";
 const EMPTY = "";
 const FLAG = "🚩";
+const HEART = "♥️";
 const COMPASS = "🧭";
 const MAP = "🗺️";
 const TELESCOPE = "🔭";
@@ -60,7 +61,8 @@ function isTileEmpty(tile) {
     tile.icon !== BOMB &&
     tile.icon !== GOLD &&
     tile.icon !== DOOR &&
-    tile.icon !== HOME
+    tile.icon !== HOME &&
+    tile.icon !== HEART
   );
 }
 
@@ -69,7 +71,7 @@ function isTileDangerous(tile) {
 }
 
 function isTilePositive(tile) {
-  return tile.icon === GOLD || tile.icon === DOOR;
+  return tile.icon === GOLD || tile.icon === DOOR || tile.icon === HEART;
 }
 
 function isTileHouse(tile) {
@@ -108,6 +110,7 @@ const Map = ({ tiles, revealTile, markTile, hoverTile, hovered }) => {
 const TileContainer = styled.span`
   border: black solid 2px;
   text-align: center;
+  font-family: "Segoe UI Symbol";
 
   &:hover {
     background-color: ${({ revealed }) => (revealed ? "" : "gainsboro")};
@@ -136,19 +139,29 @@ const TileContainer = styled.span`
         border-right-color: gray;
         `}
 
-  ${({ revealed, hovered, getTileValue }) => {
-    if (!revealed) {
+  ${({ revealed, hovered, flagged, getTileValue }) => {
+    if (!revealed && !flagged) {
       return "background-color: lightgray;";
     }
 
-    if (!hovered || getTileValue() === 0) {
-      return "background-color: aliceblue;";
+    if (!hovered) {
+      if (revealed) {
+        return "background-color: aliceblue;";
+      } else {
+        return "background-color: lightgray;";
+      }
+    }
+
+    if (flagged) {
+      return "background-color: #ffcbcb;";
     }
 
     if (getTileValue() > 0) {
       return "background-color: #d0ffcb;";
     } else if (getTileValue() < 0) {
       return "background-color: #ffcbcb;";
+    } else {
+      return "background-color: aliceblue;";
     }
   }}
 `;
@@ -183,9 +196,10 @@ const Tile = ({
         } else if (isTileDangerous({ icon })) {
           return -1;
         } else {
-          return parseInt(icon);
+          return 0;
         }
       }}
+      flagged={flagged}
       onClick={event => {
         revealTile(location);
       }}
@@ -218,6 +232,10 @@ const pickTile = () => {
 
   if (choice < 40) {
     return GOLD;
+  }
+
+  if (choice < 46) {
+    return HEART;
   }
 
   return EMPTY;
@@ -308,6 +326,9 @@ const App = () => {
         break;
       case BOMB:
         setLives(lives - 1);
+        break;
+      case HEART:
+        setLives(lives + 1);
         break;
       case DOOR:
         setFoundDoor(true);
