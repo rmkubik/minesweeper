@@ -14,6 +14,20 @@ import {
 } from "functional-game-utils";
 import { anyPass } from "ramda";
 
+function randIntBetween(low, high) {
+  return Math.floor(Math.random() * (high - low)) + low;
+}
+
+function getRandomLocation(matrix) {
+  const maxRow = matrix.length;
+  const maxCol = matrix[0].length;
+
+  return {
+    row: randIntBetween(0, maxRow),
+    col: randIntBetween(0, maxCol)
+  };
+}
+
 const MapContainer = styled.div`
   display: grid;
   grid-template-columns: ${({ tileSize, width }) =>
@@ -37,6 +51,7 @@ const FLAG = "🚩";
 const COMPASS = "🧭";
 const MAP = "🗺️";
 const TELESCOPE = "🔭";
+const HOME = "🏠";
 
 const Map = ({ tiles, revealTile, markTile }) => {
   return (
@@ -126,7 +141,12 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 function isTileEmpty(tile) {
-  return tile.icon !== BOMB && tile.icon !== GOLD && tile.icon !== DOOR;
+  return (
+    tile.icon !== BOMB &&
+    tile.icon !== GOLD &&
+    tile.icon !== DOOR &&
+    tile.icon !== HOME
+  );
 }
 
 function isTileDangerous(tile) {
@@ -135,6 +155,10 @@ function isTileDangerous(tile) {
 
 function isTilePositive(tile) {
   return tile.icon === GOLD || tile.icon === DOOR;
+}
+
+function isTileHouse(tile) {
+  return tile.icon === HOME;
 }
 
 const pickTile = () => {
@@ -178,46 +202,55 @@ const placeDoor = tiles => {
   return updateMatrix({ row, col }, { icon: DOOR, revealed: false }, tiles);
 };
 
+const revealConnectedTiles = (tiles, location) => {
+  const tile = getLocation(tiles, location);
+
+  const connectedEmptyLocations = floodFill(
+    getNeighbors(getCrossDirections),
+    tile => isTileEmpty(tile) || isTileHouse(tile),
+    // anyPass([isTileEmpty, isTilePositive]),
+    tiles,
+    [location],
+    [],
+    []
+  );
+
+  // reveal clicked tiles
+  let newTiles = updateMatrix(location, { ...tile, revealed: true }, tiles);
+
+  // reveal all connected empty tiles
+  connectedEmptyLocations.forEach(emptyLocation => {
+    const emptyTile = getLocation(tiles, emptyLocation);
+
+    newTiles = updateMatrix(
+      emptyLocation,
+      { ...emptyTile, revealed: true },
+      newTiles
+    );
+  });
+
+  return newTiles;
+};
+
 const App = () => {
   const [tiles, setTiles] = useState([]);
   const [gold, setGold] = useState(0);
   const [lives, setLives] = useState(3);
   const [foundDoor, setFoundDoor] = useState(false);
 
-  useEffect(() => {
-    const generatedTiles = constructMatrix(
-      () => {
-        return { icon: pickTile(), revealed: false };
-      },
-      { width: TILES_WIDE, height: TILES_HIGH }
-    );
-
-    const doorPlacedTiles = placeDoor(generatedTiles);
-
-    const numbersAddedTiles = mapMatrix((tile, location, tiles) => {
-      if (!isTileEmpty(tile)) {
-        return tile;
-      }
-
-      const neighborIconCounts = countNeighboringIcons(tile, location, tiles);
-
-      if (neighborIconCounts === 0) {
-        return {
-          ...tile,
-          icon: ""
-        };
-      }
-
-      return {
-        ...tile,
-        icon: "" + neighborIconCounts
-      };
-    }, doorPlacedTiles);
-
-    setTiles(numbersAddedTiles);
-  }, []);
-
   const revealTile = location => {
+    const newTiles = revealConnectedTiles(tiles, location);
+
+    setTiles(newTiles);
+  };
+
+  const markTile = location => {
+    const tile = getLocation(tiles, location);
+
+    setTiles(updateMatrix(location, { ...tile, flagged: true }, tiles));
+  };
+
+  const handleClick = location => {
     const tile = getLocation(tiles, location);
 
     switch (tile.icon) {
@@ -230,45 +263,73 @@ const App = () => {
       case DOOR:
         setFoundDoor(true);
         break;
+      default:
+        break;
     }
+  };
 
-    const connectedEmptyLocations = floodFill(
-      getNeighbors(getCrossDirections),
-      isTileEmpty,
-      // anyPass([isTileEmpty, isTilePositive]),
-      tiles,
-      [location],
-      [],
-      []
+  useEffect(() => {
+    const generatedTiles = constructMatrix(
+      () => {
+        return { icon: pickTile(), revealed: false };
+      },
+      { width: TILES_WIDE, height: TILES_HIGH }
     );
 
-    // reveal clicked tiles
-    let newTiles = updateMatrix(location, { ...tile, revealed: true }, tiles);
+    // pick starting tile
+    const startingLocation = getRandomLocation(generatedTiles);
+    const startingTile = getLocation(generatedTiles, startingLocation);
+    const startingTilePickedTiles = updateMatrix(
+      startingLocation,
+      { ...startingTile, icon: HOME },
+      generatedTiles
+    );
 
-    // reveal all connected empty tiles
-    connectedEmptyLocations.forEach(emptyLocation => {
-      const emptyTile = getLocation(tiles, emptyLocation);
+    // place exit
+    const doorPlacedTiles = placeDoor(startingTilePickedTiles);
 
-      newTiles = updateMatrix(
-        emptyLocation,
-        { ...emptyTile, revealed: true },
-        newTiles
-      );
-    });
+    // count tile marking numbers
+    const numbersAddedTiles = mapMatrix((tile, location, tiles) => {
+      if (!isTileEmpty(tile)) {
+        return tile;
+      }
 
-    setTiles(newTiles);
-  };
+      const neighborIconCounts = countNeighboringIcons(tile, location, tiles);
 
-  const markTile = location => {
-    const tile = getLocation(tiles, location);
+      if (neighborIconCounts === 0) {
+        return {
+          ...tile,
+          icon: EMPTY
+        };
+      }
 
-    setTiles(updateMatrix(location, { ...tile, flagged: true }, tiles));
-  };
+      return {
+        ...tile,
+        icon: "" + neighborIconCounts
+      };
+    }, doorPlacedTiles);
+
+    // reveal starting tile and connencted tiles
+    const revealedTiles = revealConnectedTiles(
+      numbersAddedTiles,
+      startingLocation
+    );
+
+    // set default tiles
+    setTiles(revealedTiles);
+  }, []);
 
   return (
     <>
       <GlobalStyle />
-      <Map tiles={tiles} revealTile={revealTile} markTile={markTile} />
+      <Map
+        tiles={tiles}
+        revealTile={location => {
+          handleClick(location);
+          revealTile(location);
+        }}
+        markTile={markTile}
+      />
       <p>Gold: {gold}</p>
       <p>Lives: {lives}</p>
       <p>{foundDoor ? "You found the exit!" : ""}</p>
