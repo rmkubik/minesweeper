@@ -12,6 +12,7 @@ import {
   getCrossDirections,
   getAllDirections
 } from "functional-game-utils";
+import { anyPass } from "ramda";
 
 const MapContainer = styled.div`
   display: grid;
@@ -33,6 +34,9 @@ const BOMB = "💣";
 const GOLD = "💰";
 const EMPTY = "";
 const FLAG = "🚩";
+const COMPASS = "🧭";
+const MAP = "🗺️";
+const TELESCOPE = "🔭";
 
 const Map = ({ tiles, revealTile, markTile }) => {
   return (
@@ -129,6 +133,10 @@ function isTileDangerous(tile) {
   return tile.icon === BOMB;
 }
 
+function isTilePositive(tile) {
+  return tile.icon === GOLD || tile.icon === DOOR;
+}
+
 const pickTile = () => {
   const choice = Math.floor(Math.random() * 100);
 
@@ -150,6 +158,10 @@ const countNeighboringIcons = (tile, location, tiles) => {
     const neighbor = getLocation(tiles, neighborLocation);
 
     if (isTileDangerous(neighbor)) {
+      return count - 1;
+    }
+
+    if (isTilePositive(neighbor)) {
       return count + 1;
     }
 
@@ -223,6 +235,7 @@ const App = () => {
     const connectedEmptyLocations = floodFill(
       getNeighbors(getCrossDirections),
       isTileEmpty,
+      // anyPass([isTileEmpty, isTilePositive]),
       tiles,
       [location],
       [],
