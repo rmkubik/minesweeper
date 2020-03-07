@@ -10,7 +10,9 @@ import {
   floodFill,
   getNeighbors,
   getCrossDirections,
-  getAllDirections
+  getAllDirections,
+  isLocationInBounds,
+  compareLocations
 } from "functional-game-utils";
 import { anyPass } from "ramda";
 
@@ -53,7 +55,34 @@ const MAP = "🗺️";
 const TELESCOPE = "🔭";
 const HOME = "🏠";
 
-const Map = ({ tiles, revealTile, markTile }) => {
+function isTileEmpty(tile) {
+  return (
+    tile.icon !== BOMB &&
+    tile.icon !== GOLD &&
+    tile.icon !== DOOR &&
+    tile.icon !== HOME
+  );
+}
+
+function isTileDangerous(tile) {
+  return tile.icon === BOMB;
+}
+
+function isTilePositive(tile) {
+  return tile.icon === GOLD || tile.icon === DOOR;
+}
+
+function isTileHouse(tile) {
+  return tile.icon === HOME;
+}
+
+const Map = ({ tiles, revealTile, markTile, hoverTile, hovered }) => {
+  let hoveredNeighbors = [];
+
+  if (isLocationInBounds(tiles, hovered)) {
+    hoveredNeighbors = getNeighbors(getAllDirections, tiles, hovered);
+  }
+
   return (
     <MapContainer tileSize={32} width={TILES_WIDE}>
       {mapMatrix(
@@ -63,6 +92,10 @@ const Map = ({ tiles, revealTile, markTile }) => {
             revealTile={revealTile}
             location={location}
             markTile={markTile}
+            hoverTile={hoverTile}
+            hovered={hoveredNeighbors.some(hoveredLocation =>
+              compareLocations(hoveredLocation, location)
+            )}
             {...tile}
           />
         ),
@@ -91,22 +124,45 @@ const TileContainer = styled.span`
   ${({ revealed }) =>
     revealed
       ? `
-        background-color: aliceblue;
         border-top-color: lightgray;
         border-left-color: lightgray;
         border-bottom-color: lightgray;
         border-right-color: lightgray;
         `
       : `
-        background-color: lightgray;
         border-top-color: aliceblue;
         border-left-color: aliceblue;
         border-bottom-color: gray;
         border-right-color: gray;
         `}
+
+  ${({ revealed, hovered, getTileValue }) => {
+    if (!revealed) {
+      return "background-color: lightgray;";
+    }
+
+    if (!hovered || getTileValue() === 0) {
+      return "background-color: aliceblue;";
+    }
+
+    if (getTileValue() > 0) {
+      return "background-color: #d0ffcb;";
+    } else if (getTileValue() < 0) {
+      return "background-color: #ffcbcb;";
+    }
+  }}
 `;
 
-const Tile = ({ icon, revealed, revealTile, location, flagged, markTile }) => {
+const Tile = ({
+  icon,
+  revealed,
+  revealTile,
+  location,
+  flagged,
+  markTile,
+  hoverTile,
+  hovered
+}) => {
   let displayIcon = "";
 
   if (flagged) {
@@ -120,12 +176,25 @@ const Tile = ({ icon, revealed, revealTile, location, flagged, markTile }) => {
   return (
     <TileContainer
       revealed={revealed}
+      hovered={hovered}
+      getTileValue={() => {
+        if (isTilePositive({ icon })) {
+          return 1;
+        } else if (isTileDangerous({ icon })) {
+          return -1;
+        } else {
+          return parseInt(icon);
+        }
+      }}
       onClick={event => {
         revealTile(location);
       }}
       onContextMenu={event => {
         event.preventDefault();
         markTile(location);
+      }}
+      onMouseOver={event => {
+        hoverTile(location);
       }}
     >
       {displayIcon}
@@ -139,27 +208,6 @@ const GlobalStyle = createGlobalStyle`
     font-family: Helvetica, Arial, sans-serif;
   }
 `;
-
-function isTileEmpty(tile) {
-  return (
-    tile.icon !== BOMB &&
-    tile.icon !== GOLD &&
-    tile.icon !== DOOR &&
-    tile.icon !== HOME
-  );
-}
-
-function isTileDangerous(tile) {
-  return tile.icon === BOMB;
-}
-
-function isTilePositive(tile) {
-  return tile.icon === GOLD || tile.icon === DOOR;
-}
-
-function isTileHouse(tile) {
-  return tile.icon === HOME;
-}
 
 const pickTile = () => {
   const choice = Math.floor(Math.random() * 100);
@@ -237,6 +285,7 @@ const App = () => {
   const [gold, setGold] = useState(0);
   const [lives, setLives] = useState(3);
   const [foundDoor, setFoundDoor] = useState(false);
+  const [hovered, setHovered] = useState({});
 
   const revealTile = location => {
     const newTiles = revealConnectedTiles(tiles, location);
@@ -329,6 +378,8 @@ const App = () => {
           revealTile(location);
         }}
         markTile={markTile}
+        hoverTile={location => setHovered(location)}
+        hovered={hovered}
       />
       <p>Gold: {gold}</p>
       <p>Lives: {lives}</p>
