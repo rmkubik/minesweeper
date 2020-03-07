@@ -234,7 +234,7 @@ const pickTile = () => {
     return GOLD;
   }
 
-  if (choice < 46) {
+  if (choice < 42) {
     return HEART;
   }
 
