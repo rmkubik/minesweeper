@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import styled, { createGlobalStyle } from "styled-components";
+import { createGlobalStyle } from "styled-components";
 import {
-  fillMatrix,
   mapMatrix,
   updateMatrix,
   getLocation,
@@ -10,211 +9,21 @@ import {
   floodFill,
   getNeighbors,
   getCrossDirections,
-  getAllDirections,
-  isLocationInBounds,
-  compareLocations
+  getAllDirections
 } from "functional-game-utils";
-import { anyPass } from "ramda";
-
-function randIntBetween(low, high) {
-  return Math.floor(Math.random() * (high - low)) + low;
-}
-
-function getRandomLocation(matrix) {
-  const maxRow = matrix.length;
-  const maxCol = matrix[0].length;
-
-  return {
-    row: randIntBetween(0, maxRow),
-    col: randIntBetween(0, maxCol)
-  };
-}
-
-const MapContainer = styled.div`
-  display: grid;
-  grid-template-columns: ${({ tileSize, width }) =>
-    `${tileSize}px `.repeat(width)};
-
-  span {
-    width: ${({ tileSize }) => tileSize}px;
-    height: ${({ tileSize }) => tileSize}px;
-    line-height: ${({ tileSize }) => tileSize}px;
-  }
-`;
+import {
+  tileTypes,
+  getRandomLocation,
+  WeightedMap,
+  isTileEmpty,
+  isTileDangerous,
+  isTileHouse,
+  isTilePositive
+} from "./utils/index";
+import Map from "./components/Map";
 
 const TILES_WIDE = 15;
 const TILES_HIGH = 15;
-
-const DOOR = "🚪";
-const BOMB = "💣";
-const GOLD = "💰";
-const EMPTY = "";
-const FLAG = "🚩";
-const HEART = "♥️";
-const COMPASS = "🧭";
-const MAP = "🗺️";
-const TELESCOPE = "🔭";
-const HOME = "🏠";
-
-function isTileEmpty(tile) {
-  return (
-    tile.icon !== BOMB &&
-    tile.icon !== GOLD &&
-    tile.icon !== DOOR &&
-    tile.icon !== HOME &&
-    tile.icon !== HEART
-  );
-}
-
-function isTileDangerous(tile) {
-  return tile.icon === BOMB;
-}
-
-function isTilePositive(tile) {
-  return tile.icon === GOLD || tile.icon === DOOR || tile.icon === HEART;
-}
-
-function isTileHouse(tile) {
-  return tile.icon === HOME;
-}
-
-const Map = ({ tiles, revealTile, markTile, hoverTile, hovered }) => {
-  let hoveredNeighbors = [];
-
-  if (isLocationInBounds(tiles, hovered)) {
-    hoveredNeighbors = getNeighbors(getAllDirections, tiles, hovered);
-  }
-
-  return (
-    <MapContainer tileSize={32} width={TILES_WIDE}>
-      {mapMatrix(
-        (tile, location) => (
-          <Tile
-            key={location.row * 10 + location.col}
-            revealTile={revealTile}
-            location={location}
-            markTile={markTile}
-            hoverTile={hoverTile}
-            hovered={hoveredNeighbors.some(hoveredLocation =>
-              compareLocations(hoveredLocation, location)
-            )}
-            {...tile}
-          />
-        ),
-        tiles
-      )}
-    </MapContainer>
-  );
-};
-
-const TileContainer = styled.span`
-  border: black solid 2px;
-  text-align: center;
-  font-family: "Segoe UI Symbol";
-
-  &:hover {
-    background-color: ${({ revealed }) => (revealed ? "" : "gainsboro")};
-  }
-
-  &:active {
-    background-color: gainsboro;
-    border-top-color: gray;
-    border-left-color: gray;
-    border-bottom-color: aliceblue;
-    border-right-color: aliceblue;
-  }
-
-  ${({ revealed }) =>
-    revealed
-      ? `
-        border-top-color: lightgray;
-        border-left-color: lightgray;
-        border-bottom-color: lightgray;
-        border-right-color: lightgray;
-        `
-      : `
-        border-top-color: aliceblue;
-        border-left-color: aliceblue;
-        border-bottom-color: gray;
-        border-right-color: gray;
-        `}
-
-  ${({ revealed, hovered, flagged, getTileValue }) => {
-    if (!revealed && !flagged) {
-      return "background-color: lightgray;";
-    }
-
-    if (!hovered) {
-      if (revealed) {
-        return "background-color: aliceblue;";
-      } else {
-        return "background-color: lightgray;";
-      }
-    }
-
-    if (flagged) {
-      return "background-color: #ffcbcb;";
-    }
-
-    if (getTileValue() > 0) {
-      return "background-color: #d0ffcb;";
-    } else if (getTileValue() < 0) {
-      return "background-color: #ffcbcb;";
-    } else {
-      return "background-color: aliceblue;";
-    }
-  }}
-`;
-
-const Tile = ({
-  icon,
-  revealed,
-  revealTile,
-  location,
-  flagged,
-  markTile,
-  hoverTile,
-  hovered
-}) => {
-  let displayIcon = "";
-
-  if (flagged) {
-    displayIcon = FLAG;
-  }
-
-  if (revealed) {
-    displayIcon = icon;
-  }
-
-  return (
-    <TileContainer
-      revealed={revealed}
-      hovered={hovered}
-      getTileValue={() => {
-        if (isTilePositive({ icon })) {
-          return 1;
-        } else if (isTileDangerous({ icon })) {
-          return -1;
-        } else {
-          return 0;
-        }
-      }}
-      flagged={flagged}
-      onClick={event => {
-        revealTile(location);
-      }}
-      onContextMenu={event => {
-        event.preventDefault();
-        markTile(location);
-      }}
-      onMouseOver={event => {
-        hoverTile(location);
-      }}
-    >
-      {displayIcon}
-    </TileContainer>
-  );
-};
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -224,21 +33,14 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const pickTile = () => {
-  const choice = Math.floor(Math.random() * 100);
+  const choices = new WeightedMap({
+    [tileTypes.BOMB]: 20,
+    [tileTypes.GOLD]: 20,
+    [tileTypes.HEART]: 2,
+    [tileTypes.EMPTY]: 58
+  });
 
-  if (choice < 20) {
-    return BOMB;
-  }
-
-  if (choice < 40) {
-    return GOLD;
-  }
-
-  if (choice < 42) {
-    return HEART;
-  }
-
-  return EMPTY;
+  return choices.pickRandom();
 };
 
 const countNeighboringIcons = (tile, location, tiles) => {
@@ -265,7 +67,11 @@ const placeDoor = tiles => {
   const row = Math.floor(Math.random() * TILES_HIGH);
   const col = Math.floor(Math.random() * TILES_WIDE);
 
-  return updateMatrix({ row, col }, { icon: DOOR, revealed: false }, tiles);
+  return updateMatrix(
+    { row, col },
+    { icon: tileTypes.DOOR, revealed: false },
+    tiles
+  );
 };
 
 const revealConnectedTiles = (tiles, location) => {
@@ -307,30 +113,36 @@ const App = () => {
 
   const revealTile = location => {
     const newTiles = revealConnectedTiles(tiles, location);
+    const tile = getLocation(newTiles, location);
+    const unFlaggedTiles = updateMatrix(
+      location,
+      { ...tile, flagged: false },
+      newTiles
+    );
 
-    setTiles(newTiles);
+    setTiles(unFlaggedTiles);
   };
 
-  const markTile = location => {
+  const markTile = (location, marked) => {
     const tile = getLocation(tiles, location);
 
-    setTiles(updateMatrix(location, { ...tile, flagged: true }, tiles));
+    setTiles(updateMatrix(location, { ...tile, flagged: marked }, tiles));
   };
 
   const handleClick = location => {
     const tile = getLocation(tiles, location);
 
     switch (tile.icon) {
-      case GOLD:
+      case tileTypes.GOLD:
         setGold(gold + 1);
         break;
-      case BOMB:
+      case tileTypes.BOMB:
         setLives(lives - 1);
         break;
-      case HEART:
+      case tileTypes.HEART:
         setLives(lives + 1);
         break;
-      case DOOR:
+      case tileTypes.DOOR:
         setFoundDoor(true);
         break;
       default:
@@ -351,7 +163,7 @@ const App = () => {
     const startingTile = getLocation(generatedTiles, startingLocation);
     const startingTilePickedTiles = updateMatrix(
       startingLocation,
-      { ...startingTile, icon: HOME },
+      { ...startingTile, icon: tileTypes.HOME },
       generatedTiles
     );
 
@@ -369,7 +181,7 @@ const App = () => {
       if (neighborIconCounts === 0) {
         return {
           ...tile,
-          icon: EMPTY
+          icon: tileTypes.EMPTY
         };
       }
 
@@ -401,6 +213,8 @@ const App = () => {
         markTile={markTile}
         hoverTile={location => setHovered(location)}
         hovered={hovered}
+        width={TILES_WIDE}
+        height={TILES_HIGH}
       />
       <p>Gold: {gold}</p>
       <p>Lives: {lives}</p>
