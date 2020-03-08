@@ -5,6 +5,7 @@ import { updateMatrix, getLocation } from "functional-game-utils";
 import { tileTypes, generateTiles, revealConnectedTiles } from "./utils/index";
 import Map from "./components/Map";
 import Log from "./components/Log";
+import Inventory from "./components/Inventory";
 
 const TILES_WIDE = 15;
 const TILES_HIGH = 15;
@@ -48,6 +49,19 @@ const App = () => {
   const [hovered, setHovered] = useState({});
   const [actionLog, setActionLog] = useState([]);
   const [level, setLevel] = useState(0);
+  const [inventory, setInventory] = useState({ [tileTypes.HEART]: 3 });
+
+  const modifyInventoryItemCount = (item, increment) => {
+    const invCopy = { ...inventory };
+
+    if (!invCopy[item]) {
+      invCopy[item] = 0;
+    }
+
+    invCopy[item] += increment;
+
+    setInventory(invCopy);
+  };
 
   const logAction = message => {
     setActionLog([...actionLog, message]);
@@ -91,6 +105,7 @@ const App = () => {
     switch (tile.icon) {
       case tileTypes.GOLD:
         setGold(gold + 1);
+        modifyInventoryItemCount(tileTypes.GOLD, 1);
         logAction(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
@@ -100,6 +115,7 @@ const App = () => {
         break;
       case tileTypes.BOMB:
         setLives(lives - 1);
+        modifyInventoryItemCount(tileTypes.HEART, -1);
         logAction(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
@@ -109,6 +125,7 @@ const App = () => {
         break;
       case tileTypes.HEART:
         setLives(lives + 1);
+        modifyInventoryItemCount(tileTypes.HEART, 1);
         logAction(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
@@ -150,8 +167,8 @@ const App = () => {
         height={TILES_HIGH}
       />
       <Panel>
-        <p>Gold: {gold}</p>
-        <p>Lives: {lives}</p>
+        <Inventory inventory={inventory} />
+        {/* <p>Inventory: {JSON.stringify(inventory)}</p> */}
         <p>Level: {level}</p>
       </Panel>
       <Panel>
