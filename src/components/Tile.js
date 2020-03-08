@@ -5,7 +5,12 @@ import { tileTypes, isTilePositive, isTileDangerous } from "../utils/index";
 const TileContainer = styled.span`
   border: black solid 2px;
   text-align: center;
-  font-family: "Segoe UI Symbol";
+
+  img {
+    width: 24px;
+    height: 24px;
+    margin: 4px;
+  }
 
   &:hover {
     background-color: ${({ revealed }) => (revealed ? "" : "gainsboro")};
@@ -106,7 +111,7 @@ const Tile = ({
         hoverTile(location);
       }}
     >
-      {displayIcon}
+      {displayIcon.includes(".png") ? <img src={displayIcon} /> : displayIcon}
     </TileContainer>
   );
 };

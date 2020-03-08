@@ -1,14 +1,24 @@
+import door from "../../assets/door_1f6aa.png";
+import bomb from "../../assets/bomb_1f4a3.png";
+import gold from "../../assets/money-bag_1f4b0.png";
+import flag from "../../assets/triangular-flag-on-post_1f6a9.png";
+import heart from "../../assets/heavy-black-heart_2764.png";
+import compass from "../../assets/compass_1f9ed.png";
+import map from "../../assets/world-map_1f5fa.png";
+import telescope from "../../assets/telescope_1f52d.png";
+import home from "../../assets/house-building_1f3e0.png";
+
 const tileTypes = {
-  DOOR: "🚪",
-  BOMB: "💣",
-  GOLD: "💰",
+  DOOR: door,
+  BOMB: bomb,
+  GOLD: gold,
   EMPTY: "",
-  FLAG: "🚩",
-  HEART: "♥️",
-  COMPASS: "🧭",
-  MAP: "🗺️",
-  TELESCOPE: "🔭",
-  HOME: "🏠"
+  FLAG: flag,
+  HEART: heart,
+  COMPASS: compass,
+  MAP: map,
+  TELESCOPE: telescope,
+  HOME: home
 };
 
 function isTileEmpty(tile) {

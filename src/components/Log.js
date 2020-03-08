@@ -7,6 +7,17 @@ const LogList = styled.ul`
   height: 20vh;
   overflow: scroll;
   margin: 0;
+
+  img {
+    width: 22px;
+    height: 22px;
+    margin-bottom: 4px;
+    vertical-align: bottom;
+  }
+
+  p {
+    margin: 0;
+  }
 `;
 
 const LogItem = styled.li`

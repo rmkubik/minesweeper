@@ -92,32 +92,36 @@ const App = () => {
       case tileTypes.GOLD:
         setGold(gold + 1);
         logAction(
-          `Clicked ${JSON.stringify(location)}. Found ${
-            tileTypes.GOLD
-          }. Gain a gold.`
+          <p>
+            Clicked {JSON.stringify(location)}. Found{" "}
+            <img src={tileTypes.GOLD} />. Gain a gold.
+          </p>
         );
         break;
       case tileTypes.BOMB:
         setLives(lives - 1);
         logAction(
-          `Clicked ${JSON.stringify(location)}. Found ${
-            tileTypes.BOMB
-          }. Lose a life.`
+          <p>
+            Clicked {JSON.stringify(location)}. Found{" "}
+            <img src={tileTypes.BOMB} />. Lose a life.
+          </p>
         );
         break;
       case tileTypes.HEART:
         setLives(lives + 1);
         logAction(
-          `Clicked ${JSON.stringify(location)}. Found ${
-            tileTypes.HEART
-          }. Gain a life.`
+          <p>
+            Clicked {JSON.stringify(location)}. Found{" "}
+            <img src={tileTypes.HEART} />. Gain a life.
+          </p>
         );
         break;
       case tileTypes.DOOR:
         logAction(
-          `Clicked ${JSON.stringify(location)}. Found ${
-            tileTypes.DOOR
-          }. Go to next level.`
+          <p>
+            Clicked {JSON.stringify(location)}. Found{" "}
+            <img src={tileTypes.DOOR} />. Go to next level.
+          </p>
         );
         setLevel(level + 1);
         generateNewTiles();

@@ -7,7 +7,7 @@
     "start": "parcel src/index.html",
     "build": "parcel build src/index.html --public-url ./",
     "compress": "zip -r bombfinder.zip dist",
-    "deploy": "npm run build && npm run compress && butler push bombfinder.zip rmkubik/bombfinder:html"
+    "deploy": "npm run build && butler push dist rmkubik/bombfinder:html"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +21,7 @@
     "styled-components": "^4.4.1"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.12.4"
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-clean-dist": "0.0.6"
   }
 }
