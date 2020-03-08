@@ -14,6 +14,14 @@ const MapContainer = styled.div`
   grid-template-columns: ${({ tileSize, width }) =>
     `${tileSize}px `.repeat(width)};
 
+  border-top-color: gray;
+  border-left-color: gray;
+  border-bottom-color: aliceblue;
+  border-right-color: aliceblue;
+  background-color: lightgray;
+  border-width: 4px;
+  border-style: solid;
+
   span {
     width: ${({ tileSize }) => tileSize}px;
     height: ${({ tileSize }) => tileSize}px;

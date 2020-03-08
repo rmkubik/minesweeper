@@ -6,8 +6,7 @@ const LogList = styled.ul`
   padding: 0;
   height: 20vh;
   overflow: scroll;
-  border: 1px black solid;
-  padding: 6px;
+  margin: 0;
 `;
 
 const LogItem = styled.li`

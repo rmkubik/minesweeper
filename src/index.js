@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import { createGlobalStyle } from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 import { updateMatrix, getLocation } from "functional-game-utils";
 import { tileTypes, generateTiles, revealConnectedTiles } from "./utils/index";
 import Map from "./components/Map";
@@ -13,7 +13,32 @@ const GlobalStyle = createGlobalStyle`
   body {
     color: ${props => (props.whiteColor ? "white" : "black")};
     font-family: Helvetica, Arial, sans-serif;
+    background-color: lightgray;
   }
+`;
+
+const Root = styled.div`
+  border-top-color: aliceblue;
+  border-left-color: aliceblue;
+  border-bottom-color: gray;
+  border-right-color: gray;
+  background-color: lightgray;
+  border-width: 4px;
+  border-style: solid;
+  padding: 8px;
+`;
+
+const Panel = styled.div`
+  border-top-color: gray;
+  border-left-color: gray;
+  border-bottom-color: aliceblue;
+  border-right-color: aliceblue;
+  background-color: white;
+  border-width: 4px;
+  border-style: solid;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  padding: 6px;
 `;
 
 const App = () => {
@@ -106,7 +131,7 @@ const App = () => {
   useEffect(() => generateNewTiles(), []);
 
   return (
-    <>
+    <Root>
       <GlobalStyle />
       <Map
         tiles={tiles}
@@ -120,11 +145,15 @@ const App = () => {
         width={TILES_WIDE}
         height={TILES_HIGH}
       />
-      <p>Gold: {gold}</p>
-      <p>Lives: {lives}</p>
-      <p>Level: {level}</p>
-      <Log messages={actionLog} />
-    </>
+      <Panel>
+        <p>Gold: {gold}</p>
+        <p>Lives: {lives}</p>
+        <p>Level: {level}</p>
+      </Panel>
+      <Panel>
+        <Log messages={actionLog} />
+      </Panel>
+    </Root>
   );
 };
 
