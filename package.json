@@ -1,11 +1,13 @@
 {
-  "name": "minesweeper",
+  "name": "bombfinder",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "parcel src/index.html",
-    "build": "parcel build src/index.html"
+    "build": "parcel build src/index.html --public-url ./",
+    "compress": "zip -r bombfinder.zip dist",
+    "deploy": "npm run build && npm run compress && butler push bombfinder.zip rmkubik/bombfinder:html"
   },
   "keywords": [],
   "author": "",
