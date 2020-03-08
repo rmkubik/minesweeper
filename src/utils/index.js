@@ -14,5 +14,6 @@ function getRandomLocation(matrix) {
   };
 }
 
+export * from "./generation";
 export * from "./tiles";
 export { randIntBetween, getRandomLocation, WeightedMap };
