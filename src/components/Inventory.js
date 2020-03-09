@@ -2,11 +2,14 @@ import React, { useRef, useLayoutEffect } from "react";
 import styled from "styled-components";
 import { tileTypes } from "../utils/index";
 
-const InventoryList = styled.ul`
-  list-style: none;
+const InventoryList = styled.div`
   padding: 0;
   overflow: scroll;
   margin: 0;
+  max-height: 20vh;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
 
   img {
     width: 22px;
@@ -16,8 +19,9 @@ const InventoryList = styled.ul`
   }
 `;
 
-const InventoryItemContainer = styled.li`
+const InventoryItemContainer = styled.div`
   line-height: 26px;
+  width: fit-content;
 `;
 
 const InventoryItem = ({ icon, count }) => (
