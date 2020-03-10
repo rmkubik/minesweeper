@@ -27,7 +27,8 @@ function isTileEmpty(tile) {
     tile.icon !== tileTypes.GOLD &&
     tile.icon !== tileTypes.DOOR &&
     tile.icon !== tileTypes.HOME &&
-    tile.icon !== tileTypes.HEART
+    tile.icon !== tileTypes.HEART &&
+    tile.icon !== tileTypes.TELESCOPE
   );
 }
 
@@ -39,7 +40,8 @@ function isTilePositive(tile) {
   return (
     tile.icon === tileTypes.GOLD ||
     tile.icon === tileTypes.DOOR ||
-    tile.icon === tileTypes.HEART
+    tile.icon === tileTypes.HEART ||
+    tile.icon === tileTypes.TELESCOPE
   );
 }
 

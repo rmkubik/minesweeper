@@ -34,7 +34,7 @@ const Inventory = ({ inventory }) => {
   return (
     <InventoryList>
       {Object.entries(inventory).map(([icon, count]) => (
-        <InventoryItem icon={icon} count={count} />
+        <InventoryItem key={icon} icon={icon} count={count} />
       ))}
     </InventoryList>
   );

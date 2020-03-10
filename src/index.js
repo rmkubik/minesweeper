@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import styled, { createGlobalStyle } from "styled-components";
 import { updateMatrix, getLocation } from "functional-game-utils";
-import { tileTypes, generateTiles, revealConnectedTiles } from "./utils/index";
+import {
+  tileTypes,
+  generateTiles,
+  getMatchingLocations,
+  isTileEmpty,
+  pickRandomlyFromArray,
+  revealTile
+} from "./utils/index";
 import Map from "./components/Map";
 import Log from "./components/Log";
 import Inventory from "./components/Inventory";
@@ -44,8 +51,6 @@ const Panel = styled.div`
 
 const App = () => {
   const [tiles, setTiles] = useState([]);
-  const [gold, setGold] = useState(0);
-  const [lives, setLives] = useState(3);
   const [hovered, setHovered] = useState({});
   const [actionLog, setActionLog] = useState([]);
   const [level, setLevel] = useState(0);
@@ -67,17 +72,17 @@ const App = () => {
     setActionLog([...actionLog, message]);
   };
 
-  const revealTile = location => {
-    const newTiles = revealConnectedTiles(tiles, location);
-    const tile = getLocation(newTiles, location);
-    const unFlaggedTiles = updateMatrix(
-      location,
-      { ...tile, flagged: false },
-      newTiles
-    );
+  // const revealTile = location => {
+  //   const newTiles = revealConnectedTiles(tiles, location);
+  //   const tile = getLocation(newTiles, location);
+  //   const unFlaggedTiles = updateMatrix(
+  //     location,
+  //     { ...tile, flagged: false },
+  //     newTiles
+  //   );
 
-    setTiles(unFlaggedTiles);
-  };
+  //   setTiles(unFlaggedTiles);
+  // };
 
   const markTile = (location, marked) => {
     const tile = getLocation(tiles, location);
@@ -102,9 +107,10 @@ const App = () => {
       return;
     }
 
+    let newTiles = revealTile(tiles, location);
+
     switch (tile.icon) {
       case tileTypes.GOLD:
-        setGold(gold + 1);
         modifyInventoryItemCount(tileTypes.GOLD, 1);
         logAction(
           <p>
@@ -114,7 +120,6 @@ const App = () => {
         );
         break;
       case tileTypes.BOMB:
-        setLives(lives - 1);
         modifyInventoryItemCount(tileTypes.HEART, -1);
         logAction(
           <p>
@@ -124,7 +129,6 @@ const App = () => {
         );
         break;
       case tileTypes.HEART:
-        setLives(lives + 1);
         modifyInventoryItemCount(tileTypes.HEART, 1);
         logAction(
           <p>
@@ -143,10 +147,24 @@ const App = () => {
         setLevel(level + 1);
         generateNewTiles();
         break;
+      case tileTypes.TELESCOPE: {
+        logAction(
+          <p>
+            Clicked {JSON.stringify(location)}. Found{" "}
+            <img src={tileTypes.TELESCOPE} />. Reveal random tile.
+          </p>
+        );
+        const emptyLocations = getMatchingLocations(isTileEmpty, tiles);
+        const target = pickRandomlyFromArray(emptyLocations);
+        newTiles = revealTile(newTiles, target);
+        break;
+      }
       default:
         logAction(`Clicked ${JSON.stringify(location)}.`);
         break;
     }
+
+    setTiles(newTiles);
   };
 
   useEffect(() => generateNewTiles(), []);
@@ -157,7 +175,6 @@ const App = () => {
       <Map
         tiles={tiles}
         revealTile={location => {
-          revealTile(location);
           handleClick(location);
         }}
         markTile={markTile}

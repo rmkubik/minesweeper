@@ -33,8 +33,8 @@ const Log = ({ messages }) => {
 
   return (
     <LogList ref={logListRef}>
-      {messages.map(message => (
-        <LogItem>{message}</LogItem>
+      {messages.map((message, index) => (
+        <LogItem key={index}>{message}</LogItem>
       ))}
     </LogList>
   );

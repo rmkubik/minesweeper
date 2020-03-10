@@ -49,17 +49,13 @@ const countNeighboringIcons = (tile, location, tiles) => {
   return neighborIconCounts;
 };
 
-const placeDoor = (tiles, dimensions) => {
+const placeTile = (tiles, dimensions, icon) => {
   const row = Math.floor(Math.random() * dimensions.height);
   const col = Math.floor(Math.random() * dimensions.width);
 
   console.log({ row, col });
 
-  return updateMatrix(
-    { row, col },
-    { icon: tileTypes.DOOR, revealed: false },
-    tiles
-  );
+  return updateMatrix({ row, col }, { icon, revealed: false }, tiles);
 };
 
 const revealConnectedTiles = (tiles, location) => {
@@ -107,7 +103,18 @@ function generateTiles(dimensions) {
   );
 
   // place exit
-  const doorPlacedTiles = placeDoor(startingTilePickedTiles, dimensions);
+  const doorPlacedTiles = placeTile(
+    startingTilePickedTiles,
+    dimensions,
+    tileTypes.DOOR
+  );
+
+  // place items
+  const telescopePlacedTiles = placeTile(
+    doorPlacedTiles,
+    dimensions,
+    tileTypes.TELESCOPE
+  );
 
   // count tile marking numbers
   const numbersAddedTiles = mapMatrix((tile, location, tiles) => {
@@ -128,7 +135,7 @@ function generateTiles(dimensions) {
       ...tile,
       icon: "" + neighborIconCounts
     };
-  }, doorPlacedTiles);
+  }, telescopePlacedTiles);
 
   // reveal starting tile and connencted tiles
   const revealedTiles = revealConnectedTiles(
@@ -139,4 +146,16 @@ function generateTiles(dimensions) {
   return revealedTiles;
 }
 
-export { generateTiles, revealConnectedTiles };
+function revealTile(tiles, location) {
+  const newTiles = revealConnectedTiles(tiles, location);
+  const tile = getLocation(newTiles, location);
+  const unFlaggedTiles = updateMatrix(
+    location,
+    { ...tile, flagged: false },
+    newTiles
+  );
+
+  return unFlaggedTiles;
+}
+
+export { generateTiles, revealConnectedTiles, revealTile };
