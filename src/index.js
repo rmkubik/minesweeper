@@ -90,15 +90,6 @@ const App = () => {
     setTiles(updateMatrix(location, { ...tile, flagged: marked }, tiles));
   };
 
-  const generateNewTiles = () => {
-    const initialTiles = generateTiles({
-      height: TILES_HIGH,
-      width: TILES_WIDE
-    });
-
-    setTiles(initialTiles);
-  };
-
   const handleClick = location => {
     const tile = getLocation(tiles, location);
 
@@ -145,7 +136,10 @@ const App = () => {
           </p>
         );
         setLevel(level + 1);
-        generateNewTiles();
+        newTiles = generateTiles({
+          height: TILES_HIGH,
+          width: TILES_WIDE
+        });
         break;
       case tileTypes.TELESCOPE: {
         logAction(
@@ -167,7 +161,14 @@ const App = () => {
     setTiles(newTiles);
   };
 
-  useEffect(() => generateNewTiles(), []);
+  useEffect(() => {
+    const initialTiles = generateTiles({
+      height: TILES_HIGH,
+      width: TILES_WIDE
+    });
+
+    setTiles(initialTiles);
+  }, []);
 
   return (
     <Root>
