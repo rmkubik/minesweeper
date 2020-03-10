@@ -1,6 +1,6 @@
 import { curry, flatten } from "ramda";
 import WeightedMap from "./WeightedMap";
-import { mapMatrix } from "functional-game-utils";
+import { mapMatrix, getLocation } from "functional-game-utils";
 
 function pickRandomlyFromArray(array) {
   return array[Math.floor(Math.random() * array.length)];
@@ -23,8 +23,10 @@ function getRandomLocation(matrix) {
 const getMatchingLocations = curry((filter, matrix) => {
   const locationMatrix = mapMatrix((tile, location, tiles) => location, matrix);
 
-  const filteredMatrix = locationMatrix.filter((array, row) =>
-    array.filter((value, col) => filter(value, { row, col }, matrix))
+  const filteredMatrix = locationMatrix.map(array =>
+    array.filter(location =>
+      filter(getLocation(matrix, location), location, matrix)
+    )
   );
 
   return flatten(filteredMatrix);

@@ -72,18 +72,6 @@ const App = () => {
     setActionLog([...actionLog, message]);
   };
 
-  // const revealTile = location => {
-  //   const newTiles = revealConnectedTiles(tiles, location);
-  //   const tile = getLocation(newTiles, location);
-  //   const unFlaggedTiles = updateMatrix(
-  //     location,
-  //     { ...tile, flagged: false },
-  //     newTiles
-  //   );
-
-  //   setTiles(unFlaggedTiles);
-  // };
-
   const markTile = (location, marked) => {
     const tile = getLocation(tiles, location);
 
@@ -148,8 +136,16 @@ const App = () => {
             <img src={tileTypes.TELESCOPE} />. Reveal random tile.
           </p>
         );
-        const emptyLocations = getMatchingLocations(isTileEmpty, tiles);
+        const emptyLocations = getMatchingLocations(
+          tile => !tile.revealed && isTileEmpty(tile),
+          tiles
+        );
+
         const target = pickRandomlyFromArray(emptyLocations);
+        if (!target) {
+          break;
+        }
+
         newTiles = revealTile(newTiles, target);
         break;
       }
