@@ -63,6 +63,13 @@ const App = () => {
     }
   }, [inventory]);
 
+  useEffect(() => {
+    if (level >= 9) {
+      alert("You Win! You got to level 9! Click OK to restart.");
+      window.location.reload();
+    }
+  }, [level]);
+
   const modifyInventoryItemCount = (item, increment) => {
     const invCopy = { ...inventory };
 
