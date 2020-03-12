@@ -56,6 +56,13 @@ const App = () => {
   const [level, setLevel] = useState(0);
   const [inventory, setInventory] = useState({ [tileTypes.HEART]: 3 });
 
+  useEffect(() => {
+    if (inventory[tileTypes.HEART] <= 0) {
+      alert("Game Over! You ran out of hearts! Click OK to restart.");
+      window.location.reload();
+    }
+  }, [inventory]);
+
   const modifyInventoryItemCount = (item, increment) => {
     const invCopy = { ...inventory };
 
