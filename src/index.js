@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import styled, { createGlobalStyle } from "styled-components";
-import { updateMatrix, getLocation } from "functional-game-utils";
+import { updateMatrix, getLocation, mapMatrix } from "functional-game-utils";
 import {
   tileTypes,
   generateTiles,
@@ -100,6 +100,11 @@ const App = () => {
       return;
     }
 
+    if (!tile.revealed && tile.locked) {
+      // tile is locked, no clicking
+      return;
+    }
+
     let newTiles = revealTile(tiles, location);
 
     switch (tile.icon) {
@@ -138,10 +143,13 @@ const App = () => {
           </p>
         );
         setLevel(level + 1);
-        newTiles = generateTiles({
-          height: TILES_HIGH,
-          width: TILES_WIDE
-        });
+        newTiles = generateTiles(
+          {
+            height: TILES_HIGH,
+            width: TILES_WIDE
+          },
+          { level: level + 1 }
+        );
         break;
       case tileTypes.TELESCOPE: {
         logAction(
@@ -163,6 +171,17 @@ const App = () => {
         newTiles = revealTile(newTiles, target);
         break;
       }
+      case tileTypes.KEY: {
+        logAction(
+          <p>
+            Clicked {JSON.stringify(location)}. Found{" "}
+            <img src={tileTypes.KEY} />. Unlock locked tiles.
+          </p>
+        );
+
+        newTiles = mapMatrix(tile => ({ ...tile, locked: false }), tiles);
+        break;
+      }
       default:
         logAction(`Clicked ${JSON.stringify(location)}.`);
         break;
@@ -172,10 +191,13 @@ const App = () => {
   };
 
   useEffect(() => {
-    const initialTiles = generateTiles({
-      height: TILES_HIGH,
-      width: TILES_WIDE
-    });
+    const initialTiles = generateTiles(
+      {
+        height: TILES_HIGH,
+        width: TILES_WIDE
+      },
+      { level }
+    );
 
     setTiles(initialTiles);
   }, []);

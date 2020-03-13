@@ -8,15 +8,30 @@ import {
   getAllDirections,
   mapMatrix
 } from "functional-game-utils";
+import { clone, times } from "ramda";
 import {
   tileTypes,
   isTileDangerous,
   isTilePositive,
   isTileHouse,
+  isTileLocked,
   getRandomLocation,
   WeightedMap,
   isTileEmpty
 } from "./index";
+
+function lockTiles(tiles, quantity) {
+  const locations = times(() => getRandomLocation(tiles), quantity);
+
+  let newTiles = clone(tiles);
+  locations.forEach(location => {
+    const tile = getLocation(tiles, location);
+
+    newTiles = updateMatrix(location, { ...tile, locked: true }, newTiles);
+  });
+
+  return newTiles;
+}
 
 const pickTile = () => {
   const choices = new WeightedMap({
@@ -63,7 +78,7 @@ const revealConnectedTiles = (tiles, location) => {
 
   const connectedEmptyLocations = floodFill(
     getNeighbors(getCrossDirections),
-    tile => isTileEmpty(tile) || isTileHouse(tile),
+    tile => !isTileLocked(tile) && (isTileEmpty(tile) || isTileHouse(tile)),
     // anyPass([isTileEmpty, isTilePositive]),
     tiles,
     [location],
@@ -88,7 +103,7 @@ const revealConnectedTiles = (tiles, location) => {
   return newTiles;
 };
 
-function generateTiles(dimensions) {
+function generateTiles(dimensions, { level }) {
   const generatedTiles = constructMatrix(() => {
     return { icon: pickTile(), revealed: false };
   }, dimensions);
@@ -102,19 +117,25 @@ function generateTiles(dimensions) {
     generatedTiles
   );
 
+  // place items
+  const telescopePlacedTiles = placeTile(
+    startingTilePickedTiles,
+    dimensions,
+    tileTypes.TELESCOPE
+  );
+
   // place exit
   const doorPlacedTiles = placeTile(
-    startingTilePickedTiles,
+    telescopePlacedTiles,
     dimensions,
     tileTypes.DOOR
   );
 
-  // place items
-  const telescopePlacedTiles = placeTile(
-    doorPlacedTiles,
-    dimensions,
-    tileTypes.TELESCOPE
-  );
+  // place locks
+  const lockedTiles = lockTiles(doorPlacedTiles, 5);
+
+  // place key
+  const keyPlacedTiles = placeTile(lockedTiles, dimensions, tileTypes.KEY);
 
   // count tile marking numbers
   const numbersAddedTiles = mapMatrix((tile, location, tiles) => {
@@ -135,7 +156,7 @@ function generateTiles(dimensions) {
       ...tile,
       icon: "" + neighborIconCounts
     };
-  }, telescopePlacedTiles);
+  }, keyPlacedTiles);
 
   // reveal starting tile and connencted tiles
   const revealedTiles = revealConnectedTiles(

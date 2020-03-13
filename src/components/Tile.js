@@ -74,7 +74,8 @@ const Tile = ({
   flagged,
   markTile,
   hoverTile,
-  hovered
+  hovered,
+  locked
 }) => {
   let displayIcon = "";
 
@@ -84,6 +85,10 @@ const Tile = ({
 
   if (revealed) {
     displayIcon = icon;
+  }
+
+  if (locked && !revealed) {
+    displayIcon = tileTypes.LOCK;
   }
 
   return (

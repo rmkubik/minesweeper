@@ -18,7 +18,9 @@ const tileTypes = {
   COMPASS: compass,
   MAP: map,
   TELESCOPE: telescope,
-  HOME: home
+  HOME: home,
+  LOCK: "🔒",
+  KEY: "🔑"
 };
 
 function isTileEmpty(tile) {
@@ -28,7 +30,8 @@ function isTileEmpty(tile) {
     tile.icon !== tileTypes.DOOR &&
     tile.icon !== tileTypes.HOME &&
     tile.icon !== tileTypes.HEART &&
-    tile.icon !== tileTypes.TELESCOPE
+    tile.icon !== tileTypes.TELESCOPE &&
+    tile.icon !== tileTypes.KEY
   );
 }
 
@@ -41,7 +44,8 @@ function isTilePositive(tile) {
     tile.icon === tileTypes.GOLD ||
     tile.icon === tileTypes.DOOR ||
     tile.icon === tileTypes.HEART ||
-    tile.icon === tileTypes.TELESCOPE
+    tile.icon === tileTypes.TELESCOPE ||
+    tile.icon === tileTypes.KEY
   );
 }
 
@@ -49,4 +53,15 @@ function isTileHouse(tile) {
   return tile.icon === tileTypes.HOME;
 }
 
-export { tileTypes, isTileEmpty, isTileDangerous, isTilePositive, isTileHouse };
+function isTileLocked(tile) {
+  return tile.locked === true;
+}
+
+export {
+  tileTypes,
+  isTileEmpty,
+  isTileDangerous,
+  isTilePositive,
+  isTileHouse,
+  isTileLocked
+};
