@@ -13,22 +13,14 @@ import {
 import Map from "./components/Map";
 import Log from "./components/Log";
 import Inventory from "./components/Inventory";
+import themes from "./utils/themes";
 
 const TILES_WIDE = 15;
 const TILES_HIGH = 15;
 
 const theme = {
   colors: {
-    text: "black",
-    body: "lightgray",
-    borderHighlight: "aliceblue",
-    borderShadow: "gray",
-    raised: "lightgray",
-    pressed: "gainsboro",
-    raisedHighlight: "gainsboro",
-    panelBackground: "white",
-    revealedBorder: "lightgray",
-    revealed: "aliceblue",
+    ...themes.minesweeper,
     hazardTint: "#ffcbcb",
     positiveTint: "#d0ffcb",
     neutralTint: "#ccdcff"
