@@ -180,6 +180,7 @@ const App = () => {
         );
 
         newTiles = mapMatrix(tile => ({ ...tile, locked: false }), tiles);
+        newTiles = revealTile(newTiles, location);
         break;
       }
       default:
