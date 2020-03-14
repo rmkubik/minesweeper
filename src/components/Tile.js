@@ -3,7 +3,8 @@ import styled from "styled-components";
 import { tileTypes, isTilePositive, isTileDangerous } from "../utils/index";
 
 const TileContainer = styled.span`
-  border: black solid 2px;
+  border-width: 2px;
+  border-style: solid;
   text-align: center;
 
   img {
@@ -13,55 +14,53 @@ const TileContainer = styled.span`
   }
 
   &:hover {
-    background-color: ${({ revealed }) => (revealed ? "" : "gainsboro")};
+    background-color: ${({ revealed, theme }) =>
+      revealed ? "" : theme.colors.raisedHighlight};
   }
 
   &:active {
-    background-color: gainsboro;
-    border-top-color: gray;
-    border-left-color: gray;
-    border-bottom-color: aliceblue;
-    border-right-color: aliceblue;
+    background-color: ${({ theme }) => theme.colors.pressed};
+    border-top-color: ${({ theme }) => theme.colors.borderShadow};
+    border-left-color: ${({ theme }) => theme.colors.borderShadow};
+    border-bottom-color: ${({ theme }) => theme.colors.borderHighlight};
+    border-right-color: ${({ theme }) => theme.colors.borderHighlight};
   }
 
-  ${({ revealed }) =>
+  ${({ revealed, theme }) =>
     revealed
       ? `
-        border-top-color: lightgray;
-        border-left-color: lightgray;
-        border-bottom-color: lightgray;
-        border-right-color: lightgray;
+        border-color: ${theme.colors.revealedBorder};
         `
       : `
-        border-top-color: aliceblue;
-        border-left-color: aliceblue;
-        border-bottom-color: gray;
-        border-right-color: gray;
+        border-top-color: ${theme.colors.borderHighlight};
+        border-left-color: ${theme.colors.borderHighlight};
+        border-bottom-color: ${theme.colors.borderShadow};
+        border-right-color: ${theme.colors.borderShadow};
         `}
 
-  ${({ revealed, hovered, flagged, getTileValue }) => {
+  ${({ theme, revealed, hovered, flagged, getTileValue }) => {
     if (!revealed && !flagged) {
-      return "background-color: lightgray;";
+      return `background-color: ${theme.colors.raised};`;
     }
 
     if (!hovered) {
       if (revealed) {
-        return "background-color: aliceblue;";
+        return `background-color: ${theme.colors.revealed};`;
       } else {
-        return "background-color: lightgray;";
+        return `background-color: ${theme.colors.raised};`;
       }
     }
 
     if (flagged) {
-      return "background-color: #ffcbcb;";
+      return `background-color: ${theme.colors.hazardTint};`;
     }
 
     if (getTileValue() > 0) {
-      return "background-color: #d0ffcb;";
+      return `background-color: ${theme.colors.positiveTint};`;
     } else if (getTileValue() < 0) {
-      return "background-color: #ffcbcb;";
+      return `background-color: ${theme.colors.hazardTint};`;
     } else {
-      return "background-color: aliceblue;";
+      return `background-color: ${theme.colors.revealed};`;
     }
   }}
 `;

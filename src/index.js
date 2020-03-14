@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import styled, { createGlobalStyle } from "styled-components";
+import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import { updateMatrix, getLocation, mapMatrix } from "functional-game-utils";
 import {
   tileTypes,
@@ -17,31 +17,49 @@ import Inventory from "./components/Inventory";
 const TILES_WIDE = 15;
 const TILES_HIGH = 15;
 
+const theme = {
+  colors: {
+    text: "black",
+    body: "lightgray",
+    borderHighlight: "aliceblue",
+    borderShadow: "gray",
+    raised: "lightgray",
+    pressed: "gainsboro",
+    raisedHighlight: "gainsboro",
+    panelBackground: "white",
+    revealedBorder: "lightgray",
+    revealed: "aliceblue",
+    hazardTint: "#ffcbcb",
+    positiveTint: "#d0ffcb",
+    neutralTint: "#ccdcff"
+  }
+};
+
 const GlobalStyle = createGlobalStyle`
   body {
-    color: ${props => (props.whiteColor ? "white" : "black")};
+    color: ${({ theme }) => theme.colors.text};
     font-family: Helvetica, Arial, sans-serif;
-    background-color: lightgray;
+    background-color: ${({ theme }) => theme.colors.body};
   }
 `;
 
 const Root = styled.div`
-  border-top-color: aliceblue;
-  border-left-color: aliceblue;
-  border-bottom-color: gray;
-  border-right-color: gray;
-  background-color: lightgray;
+  border-top-color: ${({ theme }) => theme.colors.borderHighlight};
+  border-left-color: ${({ theme }) => theme.colors.borderHighlight};
+  border-bottom-color: ${({ theme }) => theme.colors.borderShadow};
+  border-right-color: ${({ theme }) => theme.colors.borderShadow};
+  background-color: ${({ theme }) => theme.colors.raised};
   border-width: 4px;
   border-style: solid;
   padding: 8px;
 `;
 
 const Panel = styled.div`
-  border-top-color: gray;
-  border-left-color: gray;
-  border-bottom-color: aliceblue;
-  border-right-color: aliceblue;
-  background-color: white;
+  border-top-color: ${({ theme }) => theme.colors.borderShadow};
+  border-left-color: ${({ theme }) => theme.colors.borderShadow};
+  border-bottom-color: ${({ theme }) => theme.colors.borderHighlight};
+  border-right-color: ${({ theme }) => theme.colors.borderHighlight};
+  background-color: ${({ theme }) => theme.colors.panelBackground};
   border-width: 4px;
   border-style: solid;
   margin-top: 16px;
@@ -204,28 +222,30 @@ const App = () => {
   }, []);
 
   return (
-    <Root>
-      <GlobalStyle />
-      <Map
-        tiles={tiles}
-        revealTile={location => {
-          handleClick(location);
-        }}
-        markTile={markTile}
-        hoverTile={location => setHovered(location)}
-        hovered={hovered}
-        width={TILES_WIDE}
-        height={TILES_HIGH}
-      />
-      <Panel>
-        <Inventory inventory={inventory} />
-        {/* <p>Inventory: {JSON.stringify(inventory)}</p> */}
-        <p>Level: {level}</p>
-      </Panel>
-      <Panel>
-        <Log messages={actionLog} />
-      </Panel>
-    </Root>
+    <ThemeProvider theme={theme}>
+      <Root>
+        <GlobalStyle />
+        <Map
+          tiles={tiles}
+          revealTile={location => {
+            handleClick(location);
+          }}
+          markTile={markTile}
+          hoverTile={location => setHovered(location)}
+          hovered={hovered}
+          width={TILES_WIDE}
+          height={TILES_HIGH}
+        />
+        <Panel>
+          <Inventory inventory={inventory} />
+          {/* <p>Inventory: {JSON.stringify(inventory)}</p> */}
+          <p>Level: {level}</p>
+        </Panel>
+        <Panel>
+          <Log messages={actionLog} />
+        </Panel>
+      </Root>
+    </ThemeProvider>
   );
 };
 

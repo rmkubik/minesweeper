@@ -10,15 +10,18 @@ import {
 import Tile from "./Tile";
 
 const MapContainer = styled.div`
+  user-select: none;
+  cursor: pointer;
+
   display: grid;
   grid-template-columns: ${({ tileSize, width }) =>
     `${tileSize}px `.repeat(width)};
 
-  border-top-color: gray;
-  border-left-color: gray;
-  border-bottom-color: aliceblue;
-  border-right-color: aliceblue;
-  background-color: lightgray;
+  border-top-color: ${({ theme }) => theme.colors.borderShadow};
+  border-left-color: ${({ theme }) => theme.colors.borderShadow};
+  border-bottom-color: ${({ theme }) => theme.colors.borderHighlight};
+  border-right-color: ${({ theme }) => theme.colors.borderHighlight};
+  background-color: ${({ theme }) => theme.colors.raised};
   border-width: 4px;
   border-style: solid;
 
