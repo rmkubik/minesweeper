@@ -5,23 +5,45 @@ const themes = {
     borderHighlight: "aliceblue",
     borderShadow: "gray",
     raised: "lightgray",
-    pressed: "gainsboro",
     raisedHighlight: "gainsboro",
     panelBackground: "white",
     revealedBorder: "lightgray",
-    revealed: "aliceblue"
+    tiles: {
+      text: "black",
+      raised: "lightgray",
+      pressed: "gainsboro",
+      revealed: "aliceblue",
+      revealedBorder: "lightgray",
+      borderHighlight: "aliceblue",
+      borderShadow: "gray",
+      panelBackground: "white",
+      hazardTint: "#ffcbcb",
+      positiveTint: "#d0ffcb",
+      neutralTint: "#ccdcff"
+    }
   },
-  green: {
+  locked: {
     text: "black",
-    body: "green",
-    borderHighlight: "lightgreen",
-    borderShadow: "darkgreen",
-    raised: "green",
-    pressed: "forestgreen",
-    raisedHighlight: "forestgreen",
-    panelBackground: "lightgreen",
-    revealedBorder: "lightgreen",
-    revealed: "palegreen"
+    body: "lightgray",
+    borderHighlight: "aliceblue",
+    borderShadow: "gray",
+    raised: "lightgray",
+    raisedHighlight: "gainsboro",
+    panelBackground: "white",
+    revealedBorder: "lightgray",
+    tiles: {
+      text: "black",
+      raised: "#d4c0a5",
+      pressed: "#c9ad87",
+      revealed: "#ffe9d1",
+      revealedBorder: "#d4c0a5",
+      borderHighlight: "#ffe9d1",
+      borderShadow: "#7d6c47",
+      panelBackground: "white",
+      hazardTint: "#ffcbcb",
+      positiveTint: "#d0ffcb",
+      neutralTint: "#ccdcff"
+    }
   }
 };
 

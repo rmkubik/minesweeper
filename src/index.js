@@ -20,10 +20,7 @@ const TILES_HIGH = 15;
 
 const theme = {
   colors: {
-    ...themes.minesweeper,
-    hazardTint: "#ffcbcb",
-    positiveTint: "#d0ffcb",
-    neutralTint: "#ccdcff"
+    ...themes.locked
   }
 };
 

@@ -15,52 +15,52 @@ const TileContainer = styled.span`
 
   &:hover {
     background-color: ${({ revealed, theme }) =>
-      revealed ? "" : theme.colors.raisedHighlight};
+      revealed ? "" : theme.colors.tiles.raisedHighlight};
   }
 
   &:active {
-    background-color: ${({ theme }) => theme.colors.pressed};
-    border-top-color: ${({ theme }) => theme.colors.borderShadow};
-    border-left-color: ${({ theme }) => theme.colors.borderShadow};
-    border-bottom-color: ${({ theme }) => theme.colors.borderHighlight};
-    border-right-color: ${({ theme }) => theme.colors.borderHighlight};
+    background-color: ${({ theme }) => theme.colors.tiles.pressed};
+    border-top-color: ${({ theme }) => theme.colors.tiles.borderShadow};
+    border-left-color: ${({ theme }) => theme.colors.tiles.borderShadow};
+    border-bottom-color: ${({ theme }) => theme.colors.tiles.borderHighlight};
+    border-right-color: ${({ theme }) => theme.colors.tiles.borderHighlight};
   }
 
   ${({ revealed, theme }) =>
     revealed
       ? `
-        border-color: ${theme.colors.revealedBorder};
+        border-color: ${theme.colors.tiles.revealedBorder};
         `
       : `
-        border-top-color: ${theme.colors.borderHighlight};
-        border-left-color: ${theme.colors.borderHighlight};
-        border-bottom-color: ${theme.colors.borderShadow};
-        border-right-color: ${theme.colors.borderShadow};
+        border-top-color: ${theme.colors.tiles.borderHighlight};
+        border-left-color: ${theme.colors.tiles.borderHighlight};
+        border-bottom-color: ${theme.colors.tiles.borderShadow};
+        border-right-color: ${theme.colors.tiles.borderShadow};
         `}
 
   ${({ theme, revealed, hovered, flagged, getTileValue }) => {
     if (!revealed && !flagged) {
-      return `background-color: ${theme.colors.raised};`;
+      return `background-color: ${theme.colors.tiles.raised};`;
     }
 
     if (!hovered) {
       if (revealed) {
-        return `background-color: ${theme.colors.revealed};`;
+        return `background-color: ${theme.colors.tiles.revealed};`;
       } else {
-        return `background-color: ${theme.colors.raised};`;
+        return `background-color: ${theme.colors.tiles.raised};`;
       }
     }
 
     if (flagged) {
-      return `background-color: ${theme.colors.hazardTint};`;
+      return `background-color: ${theme.colors.tiles.hazardTint};`;
     }
 
     if (getTileValue() > 0) {
-      return `background-color: ${theme.colors.positiveTint};`;
+      return `background-color: ${theme.colors.tiles.positiveTint};`;
     } else if (getTileValue() < 0) {
-      return `background-color: ${theme.colors.hazardTint};`;
+      return `background-color: ${theme.colors.tiles.hazardTint};`;
     } else {
-      return `background-color: ${theme.colors.revealed};`;
+      return `background-color: ${theme.colors.tiles.revealed};`;
     }
   }}
 `;

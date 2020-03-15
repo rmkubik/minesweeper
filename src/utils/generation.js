@@ -8,7 +8,7 @@ import {
   getAllDirections,
   mapMatrix
 } from "functional-game-utils";
-import { clone, times } from "ramda";
+import { clone, times, pipe } from "ramda";
 import {
   tileTypes,
   isTileDangerous,
@@ -104,67 +104,69 @@ const revealConnectedTiles = (tiles, location) => {
 };
 
 function generateTiles(dimensions, { level }) {
-  const generatedTiles = constructMatrix(() => {
-    return { icon: pickTile(), revealed: false };
-  }, dimensions);
+  let startingLocation;
 
-  // pick starting tile
-  const startingLocation = getRandomLocation(generatedTiles);
-  const startingTile = getLocation(generatedTiles, startingLocation);
-  const startingTilePickedTiles = updateMatrix(
-    startingLocation,
-    { ...startingTile, icon: tileTypes.HOME },
-    generatedTiles
-  );
+  return pipe(
+    // generate base tiles
+    constructMatrix(() => {
+      return { icon: pickTile(), revealed: false };
+    }),
+    tiles => {
+      // pick starting tile
+      startingLocation = getRandomLocation(tiles);
+      const startingTile = getLocation(tiles, startingLocation);
 
-  // place items
-  const telescopePlacedTiles = placeTile(
-    startingTilePickedTiles,
-    dimensions,
-    tileTypes.TELESCOPE
-  );
+      return updateMatrix(
+        startingLocation,
+        { ...startingTile, icon: tileTypes.HOME },
+        tiles
+      );
+    },
+    // place items
+    tiles => placeTile(tiles, dimensions, tileTypes.TELESCOPE),
+    // place exit
+    tiles => placeTile(tiles, dimensions, tileTypes.DOOR),
+    // place locks
+    tiles => {
+      if (level !== 1) {
+        // only lock tiles on level 1
+        return tiles;
+      }
 
-  // place exit
-  const doorPlacedTiles = placeTile(
-    telescopePlacedTiles,
-    dimensions,
-    tileTypes.DOOR
-  );
+      return lockTiles(tiles, 10);
+    },
+    // place key
+    tiles => {
+      if (level !== 1) {
+        // only lock tiles on level 1
+        return tiles;
+      }
 
-  // place locks
-  const lockedTiles = lockTiles(doorPlacedTiles, 5);
+      return placeTile(tiles, dimensions, tileTypes.KEY);
+    },
+    // count tile marking numbers
+    mapMatrix((tile, location, tiles) => {
+      if (!isTileEmpty(tile)) {
+        return tile;
+      }
 
-  // place key
-  const keyPlacedTiles = placeTile(lockedTiles, dimensions, tileTypes.KEY);
+      const neighborIconCounts = countNeighboringIcons(tile, location, tiles);
 
-  // count tile marking numbers
-  const numbersAddedTiles = mapMatrix((tile, location, tiles) => {
-    if (!isTileEmpty(tile)) {
-      return tile;
-    }
+      if (neighborIconCounts === 0) {
+        return {
+          ...tile,
+          icon: tileTypes.EMPTY
+        };
+      }
 
-    const neighborIconCounts = countNeighboringIcons(tile, location, tiles);
-
-    if (neighborIconCounts === 0) {
       return {
         ...tile,
-        icon: tileTypes.EMPTY
+        icon: "" + neighborIconCounts
       };
-    }
-
-    return {
-      ...tile,
-      icon: "" + neighborIconCounts
-    };
-  }, keyPlacedTiles);
-
-  // reveal starting tile and connencted tiles
-  const revealedTiles = revealConnectedTiles(
-    numbersAddedTiles,
-    startingLocation
-  );
-
-  return revealedTiles;
+    }),
+    // reveal starting tile and connencted tiles
+    tiles => revealConnectedTiles(tiles, startingLocation)
+  )(dimensions);
 }
 
 function revealTile(tiles, location) {
