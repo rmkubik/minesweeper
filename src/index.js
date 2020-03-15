@@ -18,12 +18,6 @@ import themes from "./utils/themes";
 const TILES_WIDE = 15;
 const TILES_HIGH = 15;
 
-const theme = {
-  colors: {
-    ...themes.locked
-  }
-};
-
 const GlobalStyle = createGlobalStyle`
   body {
     color: ${({ theme }) => theme.colors.text};
@@ -62,6 +56,7 @@ const App = () => {
   const [actionLog, setActionLog] = useState([]);
   const [level, setLevel] = useState(0);
   const [inventory, setInventory] = useState({ [tileTypes.HEART]: 3 });
+  const [theme, setTheme] = useState(themes.minesweeper);
 
   useEffect(() => {
     if (inventory[tileTypes.HEART] <= 0) {
@@ -209,6 +204,17 @@ const App = () => {
 
     setTiles(initialTiles);
   }, []);
+
+  useEffect(() => {
+    switch (level) {
+      case 1:
+        setTheme(themes.locked);
+        break;
+      default:
+        setTheme(themes.minesweeper);
+        break;
+    }
+  }, [level, setTheme]);
 
   return (
     <ThemeProvider theme={theme}>
