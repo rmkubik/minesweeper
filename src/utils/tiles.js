@@ -7,6 +7,8 @@ import compass from "../../assets/compass_1f9ed.png";
 import map from "../../assets/world-map_1f5fa.png";
 import telescope from "../../assets/telescope_1f52d.png";
 import home from "../../assets/house-building_1f3e0.png";
+import key from "../../assets/key_1f511.png";
+import lock from "../../assets/lock_1f512.png";
 
 const tileTypes = {
   DOOR: door,
@@ -19,8 +21,8 @@ const tileTypes = {
   MAP: map,
   TELESCOPE: telescope,
   HOME: home,
-  LOCK: "🔒",
-  KEY: "🔑"
+  LOCK: lock,
+  KEY: key
 };
 
 function isTileEmpty(tile) {
