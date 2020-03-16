@@ -55,11 +55,13 @@ const App = () => {
   const [hovered, setHovered] = useState({});
   const [actionLog, setActionLog] = useState([]);
   const [level, setLevel] = useState(0);
-  const [inventory, setInventory] = useState({ [tileTypes.HEART]: 3 });
+  const [inventory, setInventory] = useState({
+    [tileTypes.HEART]: { count: 3 }
+  });
   const [theme, setTheme] = useState(themes.minesweeper);
 
   useEffect(() => {
-    if (inventory[tileTypes.HEART] <= 0) {
+    if (inventory[tileTypes.HEART].count <= 0) {
       alert("Game Over! You ran out of hearts! Click OK to restart.");
       window.location.reload();
     }
@@ -76,10 +78,10 @@ const App = () => {
     const invCopy = { ...inventory };
 
     if (!invCopy[item]) {
-      invCopy[item] = 0;
+      invCopy[item] = { count: 0 };
     }
 
-    invCopy[item] += increment;
+    invCopy[item].count += increment;
 
     setInventory(invCopy);
   };
@@ -92,6 +94,33 @@ const App = () => {
     const tile = getLocation(tiles, location);
 
     setTiles(updateMatrix(location, { ...tile, flagged: marked }, tiles));
+  };
+
+  const useItem = item => {
+    switch (item) {
+      case tileTypes.TELESCOPE: {
+        logAction(
+          <p>
+            Used <img src={tileTypes.TELESCOPE} />. Reveal random tile.
+          </p>
+        );
+        const emptyLocations = getMatchingLocations(
+          tile => !tile.revealed && isTileEmpty(tile),
+          tiles
+        );
+
+        const target = pickRandomlyFromArray(emptyLocations);
+        if (!target) {
+          break;
+        }
+
+        newTiles = revealTile(newTiles, target);
+        break;
+      }
+      default:
+        logAction(`Tried to use invalid item.`);
+        break;
+    }
   };
 
   const handleClick = location => {
