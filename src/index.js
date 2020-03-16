@@ -79,6 +79,11 @@ const App = () => {
 
     if (!invCopy[item]) {
       invCopy[item] = { count: 0 };
+
+      if (item === tileTypes.TELESCOPE) {
+        // useable items
+        invCopy[item].useable = true;
+      }
     }
 
     invCopy[item].count += increment;
@@ -114,7 +119,9 @@ const App = () => {
           break;
         }
 
-        newTiles = revealTile(newTiles, target);
+        const newTiles = revealTile(tiles, target);
+        setTiles(newTiles);
+        modifyInventoryItemCount(tileTypes.TELESCOPE, -1);
         break;
       }
       default:
@@ -186,20 +193,12 @@ const App = () => {
         logAction(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
-            <img src={tileTypes.TELESCOPE} />. Reveal random tile.
+            <img src={tileTypes.TELESCOPE} />.
           </p>
         );
-        const emptyLocations = getMatchingLocations(
-          tile => !tile.revealed && isTileEmpty(tile),
-          tiles
-        );
+        modifyInventoryItemCount(tileTypes.TELESCOPE, 1);
 
-        const target = pickRandomlyFromArray(emptyLocations);
-        if (!target) {
-          break;
-        }
-
-        newTiles = revealTile(newTiles, target);
+        newTiles = revealTile(newTiles, location);
         break;
       }
       case tileTypes.KEY: {
@@ -261,7 +260,7 @@ const App = () => {
           height={TILES_HIGH}
         />
         <Panel>
-          <Inventory inventory={inventory} />
+          <Inventory inventory={inventory} useItem={useItem} />
           {/* <p>Inventory: {JSON.stringify(inventory)}</p> */}
           <p>Level: {level}</p>
         </Panel>

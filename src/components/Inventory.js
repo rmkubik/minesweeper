@@ -26,16 +26,22 @@ const InventoryItemContainer = styled.div`
 
 const InventoryItem = ({ icon, count, useable, useItem }) => (
   <InventoryItemContainer>
-    {useable && <button onClick={useItem}>Use</button>}
+    {useable && <button onClick={() => useItem(icon)}>Use</button>}
     <img src={icon} /> x{count}
   </InventoryItemContainer>
 );
 
-const Inventory = ({ inventory }) => {
+const Inventory = ({ inventory, useItem }) => {
   return (
     <InventoryList>
       {Object.entries(inventory).map(([icon, { count, useable }]) => (
-        <InventoryItem key={icon} icon={icon} count={count} useable={useable} />
+        <InventoryItem
+          key={icon}
+          icon={icon}
+          count={count}
+          useable={useable}
+          useItem={useItem}
+        />
       ))}
     </InventoryList>
   );
