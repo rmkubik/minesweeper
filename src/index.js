@@ -50,6 +50,18 @@ const Panel = styled.div`
   padding: 6px;
 `;
 
+function isItemAvailable(inventory, item) {
+  if (!inventory[item]) {
+    return false;
+  }
+
+  if (inventory[item].count <= 0) {
+    return false;
+  }
+
+  return true;
+}
+
 const App = () => {
   const [tiles, setTiles] = useState([]);
   const [hovered, setHovered] = useState({});
@@ -102,6 +114,10 @@ const App = () => {
   };
 
   const useItem = item => {
+    if (!isItemAvailable(inventory, item)) {
+      return;
+    }
+
     switch (item) {
       case tileTypes.TELESCOPE: {
         logAction(
