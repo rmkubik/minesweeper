@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
+import gsap from "gsap";
 import { tileTypes, isTilePositive, isTileDangerous } from "../utils/index";
 
 const TileContainer = styled.span`
@@ -90,6 +91,47 @@ const Tile = ({
     displayIcon = tileTypes.LOCK;
   }
 
+  const timelineRef = useRef();
+  const tileContaineRef = useRef();
+  useEffect(() => {
+    if (revealed && icon === tileTypes.DOOR) {
+      timelineRef.current = gsap.timeline({
+        repeat: -1,
+        repeatRefresh: true
+      });
+      //add 3 tweens that will play in direct succession.
+      timelineRef.current.to(tileContaineRef.current, {
+        duration: 1,
+        backgroundColor: "#f78181"
+      });
+      timelineRef.current.to(tileContaineRef.current, {
+        duration: 1,
+        backgroundColor: "#f7d281"
+      });
+      timelineRef.current.to(tileContaineRef.current, {
+        duration: 1,
+        backgroundColor: "#f7f181"
+      });
+      timelineRef.current.to(tileContaineRef.current, {
+        duration: 1,
+        backgroundColor: "#81f789"
+      });
+      timelineRef.current.to(tileContaineRef.current, {
+        duration: 1,
+        backgroundColor: "#81b0f7"
+      });
+      timelineRef.current.to(tileContaineRef.current, {
+        duration: 1,
+        backgroundColor: "#c481f7"
+      });
+    } else {
+      if (timelineRef.current) {
+        timelineRef.current.kill();
+        tileContaineRef.current.style.removeProperty("background-color");
+      }
+    }
+  }, [revealed, icon]);
+
   return (
     <TileContainer
       revealed={revealed}
@@ -114,6 +156,7 @@ const Tile = ({
       onMouseOver={event => {
         hoverTile(location);
       }}
+      ref={tileContaineRef}
     >
       {displayIcon.includes(".png") ? <img src={displayIcon} /> : displayIcon}
     </TileContainer>
