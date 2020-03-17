@@ -149,8 +149,33 @@ const App = () => {
   const handleClick = location => {
     const tile = getLocation(tiles, location);
 
+    let newTiles = revealTile(tiles, location);
+
     if (tile.revealed) {
-      // tile already reveealed, no new effect on click
+      switch (tile.icon) {
+        case tileTypes.DOOR:
+          logAction(
+            <p>
+              Clicked {JSON.stringify(location)}. Activated{" "}
+              <img src={tileTypes.DOOR} />. Go to next level.
+            </p>
+          );
+          setLevel(level + 1);
+          newTiles = generateTiles(
+            {
+              height: TILES_HIGH,
+              width: TILES_WIDE
+            },
+            { level: level + 1 }
+          );
+          break;
+        default:
+          break;
+      }
+
+      setTiles(newTiles);
+
+      // tile already reveealed, no further effect
       return;
     }
 
@@ -158,8 +183,6 @@ const App = () => {
       // tile is locked, no clicking
       return;
     }
-
-    let newTiles = revealTile(tiles, location);
 
     switch (tile.icon) {
       case tileTypes.GOLD:
@@ -193,16 +216,8 @@ const App = () => {
         logAction(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
-            <img src={tileTypes.DOOR} />. Go to next level.
+            <img src={tileTypes.DOOR} />.
           </p>
-        );
-        setLevel(level + 1);
-        newTiles = generateTiles(
-          {
-            height: TILES_HIGH,
-            width: TILES_WIDE
-          },
-          { level: level + 1 }
         );
         break;
       case tileTypes.TELESCOPE: {
