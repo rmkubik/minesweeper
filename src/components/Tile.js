@@ -97,33 +97,34 @@ const Tile = ({
     if (revealed && icon === tileTypes.DOOR) {
       timelineRef.current = gsap.timeline({
         repeat: -1,
-        repeatRefresh: true
+        yoyo: true
+        // repeatRefresh: true
       });
-      //add 3 tweens that will play in direct succession.
+
+      // timelineRef.current.to(tileContaineRef.current, {
+      //   duration: 1,
+      //   backgroundColor: "#f78181" // red
+      // });
+      // timelineRef.current.to(tileContaineRef.current, {
+      //   duration: 1,
+      //   backgroundColor: "#f7d281" //orange
+      // });
+      // timelineRef.current.to(tileContaineRef.current, {
+      //   duration: 1,
+      //   backgroundColor: "#f7f181" // yellow
+      // });
+      // timelineRef.current.to(tileContaineRef.current, {
+      //   duration: 1,
+      //   backgroundColor: "#81f789" // green
+      // });
       timelineRef.current.to(tileContaineRef.current, {
-        duration: 1,
-        backgroundColor: "#f78181"
+        duration: 3,
+        backgroundColor: "#81b0f7" // blue
       });
-      timelineRef.current.to(tileContaineRef.current, {
-        duration: 1,
-        backgroundColor: "#f7d281"
-      });
-      timelineRef.current.to(tileContaineRef.current, {
-        duration: 1,
-        backgroundColor: "#f7f181"
-      });
-      timelineRef.current.to(tileContaineRef.current, {
-        duration: 1,
-        backgroundColor: "#81f789"
-      });
-      timelineRef.current.to(tileContaineRef.current, {
-        duration: 1,
-        backgroundColor: "#81b0f7"
-      });
-      timelineRef.current.to(tileContaineRef.current, {
-        duration: 1,
-        backgroundColor: "#c481f7"
-      });
+      // timelineRef.current.to(tileContaineRef.current, {
+      //   duration: 1,
+      //   backgroundColor: "#c481f7" //purple
+      // });
     } else {
       if (timelineRef.current) {
         timelineRef.current.kill();
