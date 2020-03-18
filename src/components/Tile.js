@@ -76,7 +76,8 @@ const Tile = ({
   hoverTile,
   hovered,
   locked,
-  infected
+  infected,
+  inventory
 }) => {
   let displayIcon = "";
 
@@ -92,7 +93,12 @@ const Tile = ({
     displayIcon = tileTypes.LOCK;
   }
 
-  if (infected && !revealed) {
+  if (
+    infected &&
+    !revealed &&
+    inventory[tileTypes.MICROSCOPE] &&
+    inventory[tileTypes.MICROSCOPE].count > 0
+  ) {
     displayIcon = tileTypes.GERM;
   }
 

@@ -39,7 +39,8 @@ const Map = ({
   hoverTile,
   hovered,
   width,
-  height
+  height,
+  inventory
 }) => {
   let hoveredNeighbors = [];
 
@@ -57,6 +58,7 @@ const Map = ({
             location={location}
             markTile={markTile}
             hoverTile={hoverTile}
+            inventory={inventory}
             hovered={hoveredNeighbors.some(hoveredLocation =>
               compareLocations(hoveredLocation, location)
             )}

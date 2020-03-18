@@ -62,6 +62,23 @@ function isItemAvailable(inventory, item) {
   return true;
 }
 
+function modifyInventoryItemCount(inventory, item, increment) {
+  const invCopy = { ...inventory };
+
+  if (!invCopy[item]) {
+    invCopy[item] = { count: 0 };
+
+    if (item === tileTypes.TELESCOPE) {
+      // useable items
+      invCopy[item].useable = true;
+    }
+  }
+
+  invCopy[item].count += increment;
+
+  return invCopy;
+}
+
 const App = () => {
   const [tiles, setTiles] = useState([]);
   const [hovered, setHovered] = useState({});
@@ -86,25 +103,18 @@ const App = () => {
     }
   }, [level]);
 
-  const modifyInventoryItemCount = (item, increment) => {
-    const invCopy = { ...inventory };
+  const modifyIventoryItems = items => {
+    let invCopy = { ...inventory };
 
-    if (!invCopy[item]) {
-      invCopy[item] = { count: 0 };
-
-      if (item === tileTypes.TELESCOPE) {
-        // useable items
-        invCopy[item].useable = true;
-      }
-    }
-
-    invCopy[item].count += increment;
+    items.forEach(([item, increment]) => {
+      invCopy = modifyInventoryItemCount(invCopy, item, increment);
+    });
 
     setInventory(invCopy);
   };
 
-  const logAction = message => {
-    setActionLog([...actionLog, message]);
+  const logAction = messages => {
+    setActionLog([...actionLog, ...messages]);
   };
 
   const markTile = (location, marked) => {
@@ -120,11 +130,11 @@ const App = () => {
 
     switch (item) {
       case tileTypes.TELESCOPE: {
-        logAction(
+        logAction([
           <p>
             Used <img src={tileTypes.TELESCOPE} />. Reveal random tile.
           </p>
-        );
+        ]);
         const emptyLocations = getMatchingLocations(
           tile => !tile.revealed && isTileEmpty(tile),
           tiles
@@ -141,7 +151,7 @@ const App = () => {
         break;
       }
       default:
-        logAction(`Tried to use invalid item.`);
+        logAction([`Tried to use invalid item.`]);
         break;
     }
   };
@@ -150,11 +160,13 @@ const App = () => {
     const tile = getLocation(tiles, location);
 
     let newTiles = revealTile(tiles, location);
+    const inventoryUpdates = [];
+    const logs = [];
 
     if (tile.revealed) {
       switch (tile.icon) {
         case tileTypes.DOOR:
-          logAction(
+          logs.push(
             <p>
               Clicked {JSON.stringify(location)}. Activated{" "}
               <img src={tileTypes.DOOR} />. Go to next level.
@@ -184,10 +196,24 @@ const App = () => {
       return;
     }
 
+    if (tile.infected) {
+      if (inventory[tileTypes.SOAP] && inventory[tileTypes.SOAP].count > 0) {
+        inventoryUpdates.push([tileTypes.SOAP, -1]);
+        logs.push(<p>Disinfected {JSON.stringify(location)}. Lose a soap.</p>);
+      } else {
+        inventoryUpdates.push([tileTypes.GERM, 1]);
+        logs.push(
+          <p>
+            Touched infected location {JSON.stringify(location)}. Gain a germ.
+          </p>
+        );
+      }
+    }
+
     switch (tile.icon) {
       case tileTypes.GOLD:
-        modifyInventoryItemCount(tileTypes.GOLD, 1);
-        logAction(
+        inventoryUpdates.push([tileTypes.GOLD, 1]);
+        logs.push(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
             <img src={tileTypes.GOLD} />. Gain a gold.
@@ -195,8 +221,8 @@ const App = () => {
         );
         break;
       case tileTypes.BOMB:
-        modifyInventoryItemCount(tileTypes.HEART, -1);
-        logAction(
+        inventoryUpdates.push([tileTypes.HEART, -1]);
+        logs.push(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
             <img src={tileTypes.BOMB} />. Lose a life.
@@ -204,8 +230,8 @@ const App = () => {
         );
         break;
       case tileTypes.HEART:
-        modifyInventoryItemCount(tileTypes.HEART, 1);
-        logAction(
+        inventoryUpdates.push([tileTypes.HEART, 1]);
+        logs.push(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
             <img src={tileTypes.HEART} />. Gain a life.
@@ -213,7 +239,7 @@ const App = () => {
         );
         break;
       case tileTypes.DOOR:
-        logAction(
+        logs.push(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
             <img src={tileTypes.DOOR} />.
@@ -221,19 +247,17 @@ const App = () => {
         );
         break;
       case tileTypes.TELESCOPE: {
-        logAction(
+        logs.push(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
             <img src={tileTypes.TELESCOPE} />.
           </p>
         );
-        modifyInventoryItemCount(tileTypes.TELESCOPE, 1);
-
-        newTiles = revealTile(newTiles, location);
+        inventoryUpdates.push([tileTypes.TELESCOPE, 1]);
         break;
       }
       case tileTypes.KEY: {
-        logAction(
+        logs.push(
           <p>
             Clicked {JSON.stringify(location)}. Found{" "}
             <img src={tileTypes.KEY} />. Unlock locked tiles.
@@ -241,14 +265,36 @@ const App = () => {
         );
 
         newTiles = mapMatrix(tile => ({ ...tile, locked: false }), tiles);
-        newTiles = revealTile(newTiles, location);
+        break;
+      }
+      case tileTypes.MICROSCOPE: {
+        logs.push(
+          <p>
+            Clicked {JSON.stringify(location)}. Found{" "}
+            <img src={tileTypes.MICROSCOPE} />. Reveal all germs.
+          </p>
+        );
+
+        inventoryUpdates.push([tileTypes.MICROSCOPE, 1]);
+        break;
+      }
+      case tileTypes.SOAP: {
+        logs.push(
+          <p>
+            Clicked {JSON.stringify(location)}. Found{" "}
+            <img src={tileTypes.SOAP} />.
+          </p>
+        );
+        inventoryUpdates.push([tileTypes.SOAP, 1]);
         break;
       }
       default:
-        logAction(`Clicked ${JSON.stringify(location)}.`);
+        logs.push(`Clicked ${JSON.stringify(location)}.`);
         break;
     }
 
+    logAction(logs);
+    modifyIventoryItems(inventoryUpdates);
     setTiles(newTiles);
   };
 
@@ -292,6 +338,7 @@ const App = () => {
           hovered={hovered}
           width={TILES_WIDE}
           height={TILES_HIGH}
+          inventory={inventory}
         />
         <Panel>
           <Inventory inventory={inventory} useItem={useItem} />
