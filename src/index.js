@@ -83,7 +83,7 @@ const App = () => {
   const [tiles, setTiles] = useState([]);
   const [hovered, setHovered] = useState({});
   const [actionLog, setActionLog] = useState([]);
-  const [level, setLevel] = useState(2);
+  const [level, setLevel] = useState(0);
   const [inventory, setInventory] = useState({
     [tileTypes.HEART]: { count: 3 }
   });
