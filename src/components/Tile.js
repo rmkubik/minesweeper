@@ -75,7 +75,8 @@ const Tile = ({
   markTile,
   hoverTile,
   hovered,
-  locked
+  locked,
+  infected
 }) => {
   let displayIcon = "";
 
@@ -89,6 +90,10 @@ const Tile = ({
 
   if (locked && !revealed) {
     displayIcon = tileTypes.LOCK;
+  }
+
+  if (infected && !revealed) {
+    displayIcon = tileTypes.GERM;
   }
 
   const timelineRef = useRef();

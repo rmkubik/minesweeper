@@ -9,6 +9,9 @@ import telescope from "../../assets/telescope_1f52d.png";
 import home from "../../assets/house-building_1f3e0.png";
 import key from "../../assets/key_1f511.png";
 import lock from "../../assets/lock_1f512.png";
+import germ from "../../assets/microbe_1f9a0.png";
+import microscope from "../../assets/microscope_1f52c.png";
+import sponge from "../../assets/sponge_1f9fd.png";
 
 const tileTypes = {
   DOOR: door,
@@ -22,7 +25,10 @@ const tileTypes = {
   TELESCOPE: telescope,
   HOME: home,
   LOCK: lock,
-  KEY: key
+  KEY: key,
+  GERM: germ,
+  MICROSCOPE: microscope,
+  SOAP: sponge
 };
 
 function isTileEmpty(tile) {
@@ -33,7 +39,9 @@ function isTileEmpty(tile) {
     tile.icon !== tileTypes.HOME &&
     tile.icon !== tileTypes.HEART &&
     tile.icon !== tileTypes.TELESCOPE &&
-    tile.icon !== tileTypes.KEY
+    tile.icon !== tileTypes.KEY &&
+    tile.icon !== tileTypes.SOAP &&
+    tile.icon !== tileTypes.MICROSCOPE
   );
 }
 
@@ -47,7 +55,9 @@ function isTilePositive(tile) {
     tile.icon === tileTypes.DOOR ||
     tile.icon === tileTypes.HEART ||
     tile.icon === tileTypes.TELESCOPE ||
-    tile.icon === tileTypes.KEY
+    tile.icon === tileTypes.KEY ||
+    tile.icon === tileTypes.SOAP ||
+    tile.icon === tileTypes.MICROSCOPE
   );
 }
 
@@ -59,11 +69,16 @@ function isTileLocked(tile) {
   return tile.locked === true;
 }
 
+function isTileInfected(tile) {
+  return tile.infected === true;
+}
+
 export {
   tileTypes,
   isTileEmpty,
   isTileDangerous,
   isTilePositive,
   isTileHouse,
-  isTileLocked
+  isTileLocked,
+  isTileInfected
 };

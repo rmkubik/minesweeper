@@ -66,7 +66,7 @@ const App = () => {
   const [tiles, setTiles] = useState([]);
   const [hovered, setHovered] = useState({});
   const [actionLog, setActionLog] = useState([]);
-  const [level, setLevel] = useState(0);
+  const [level, setLevel] = useState(2);
   const [inventory, setInventory] = useState({
     [tileTypes.HEART]: { count: 3 }
   });
@@ -268,6 +268,9 @@ const App = () => {
     switch (level) {
       case 1:
         setTheme(themes.locked);
+        break;
+      case 2:
+        setTheme(themes.infection);
         break;
       default:
         setTheme(themes.minesweeper);

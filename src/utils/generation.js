@@ -17,7 +17,8 @@ import {
   isTileLocked,
   getRandomLocation,
   WeightedMap,
-  isTileEmpty
+  isTileEmpty,
+  isTileInfected
 } from "./index";
 
 function lockTiles(tiles, quantity) {
@@ -33,13 +34,21 @@ function lockTiles(tiles, quantity) {
   return newTiles;
 }
 
-const pickTile = () => {
-  const choices = new WeightedMap({
-    [tileTypes.BOMB]: 20,
-    [tileTypes.GOLD]: 20,
-    [tileTypes.HEART]: 2,
-    [tileTypes.EMPTY]: 58
+function infectTiles(tiles, quantity) {
+  const locations = times(() => getRandomLocation(tiles), quantity);
+
+  let newTiles = clone(tiles);
+  locations.forEach(location => {
+    const tile = getLocation(tiles, location);
+
+    newTiles = updateMatrix(location, { ...tile, infected: true }, newTiles);
   });
+
+  return newTiles;
+}
+
+const pickTile = map => {
+  const choices = new WeightedMap(map);
 
   return choices.pickRandom();
 };
@@ -78,7 +87,10 @@ const revealConnectedTiles = (tiles, location) => {
 
   const connectedEmptyLocations = floodFill(
     getNeighbors(getCrossDirections),
-    tile => !isTileLocked(tile) && (isTileEmpty(tile) || isTileHouse(tile)),
+    tile =>
+      !isTileInfected(tile) &&
+      !isTileLocked(tile) &&
+      (isTileEmpty(tile) || isTileHouse(tile)),
     // anyPass([isTileEmpty, isTilePositive]),
     tiles,
     [location],
@@ -104,12 +116,37 @@ const revealConnectedTiles = (tiles, location) => {
 };
 
 function generateTiles(dimensions, { level }) {
+  const LEVEL_MAPS = {
+    0: {
+      [tileTypes.BOMB]: 20,
+      [tileTypes.GOLD]: 20,
+      [tileTypes.HEART]: 2,
+      [tileTypes.EMPTY]: 58
+    },
+    1: {
+      [tileTypes.BOMB]: 20,
+      [tileTypes.GOLD]: 20,
+      [tileTypes.HEART]: 2,
+      [tileTypes.EMPTY]: 58
+    },
+    2: {
+      [tileTypes.BOMB]: 20,
+      [tileTypes.GOLD]: 10,
+      [tileTypes.SOAP]: 10,
+      [tileTypes.HEART]: 2,
+      [tileTypes.EMPTY]: 58
+    }
+  };
+
   let startingLocation;
 
   return pipe(
     // generate base tiles
     constructMatrix(() => {
-      return { icon: pickTile(), revealed: false };
+      return {
+        icon: pickTile(LEVEL_MAPS[level] || LEVEL_MAPS[0]),
+        revealed: false
+      };
     }),
     tiles => {
       // pick starting tile
@@ -143,6 +180,22 @@ function generateTiles(dimensions, { level }) {
       }
 
       return placeTile(tiles, dimensions, tileTypes.KEY);
+    },
+    tiles => {
+      if (level !== 2) {
+        // only place germs on level 2
+        return tiles;
+      }
+
+      return infectTiles(tiles, 20);
+    },
+    tiles => {
+      if (level !== 2) {
+        // only place microscope on level 2
+        return tiles;
+      }
+
+      return placeTile(tiles, dimensions, tileTypes.MICROSCOPE);
     },
     // count tile marking numbers
     mapMatrix((tile, location, tiles) => {

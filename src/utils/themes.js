@@ -48,6 +48,31 @@ const themes = {
         neutralTint: "#ccdcff"
       }
     }
+  },
+  infection: {
+    colors: {
+      text: "black",
+      body: "lightgray",
+      borderHighlight: "aliceblue",
+      borderShadow: "gray",
+      raised: "lightgray",
+      raisedHighlight: "gainsboro",
+      panelBackground: "white",
+      revealedBorder: "lightgray",
+      tiles: {
+        text: "black",
+        raised: "lightblue",
+        pressed: "#68a69f",
+        revealed: "#8cdbd1",
+        revealedBorder: "#8cbed6",
+        borderHighlight: "skyblue",
+        borderShadow: "#648e9c",
+        panelBackground: "white",
+        hazardTint: "#e07272",
+        positiveTint: "#80ed74",
+        neutralTint: "#ccdcff"
+      }
+    }
   }
 };
 
