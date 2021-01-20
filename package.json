@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "functional-game-utils": "^2.0.0",
-    "gsap": "^3.2.4",
+    "gsap": "^3.6.0",
     "ramda": "^0.26.1",
     "ramda-adjunct": "^2.23.0",
     "react": "^16.12.0",
