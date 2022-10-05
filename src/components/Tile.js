@@ -88,6 +88,15 @@ const Tile = ({
 
   if (revealed) {
     displayIcon = icon;
+
+    if (neighbors) {
+      displayIcon = (
+        <div>
+          <span style={{ color: "green" }}>{neighbors.positive}</span>
+          <span style={{ color: "red" }}>{neighbors.dangerous}</span>
+        </div>
+      );
+    }
   }
 
   if (locked && !revealed) {
@@ -171,13 +180,8 @@ const Tile = ({
       }}
       ref={tileContaineRef}
     >
-      {displayIcon.includes(".png") ? (
+      {displayIcon.includes && displayIcon.includes(".png") ? (
         <img src={displayIcon} />
-      ) : neighbors ? (
-        <div>
-          <span style={{ color: "green" }}>{neighbors.positive}</span>
-          <span style={{ color: "red" }}>{neighbors.dangerous}</span>
-        </div>
       ) : (
         displayIcon
       )}
