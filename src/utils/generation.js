@@ -6,7 +6,7 @@ import {
   getNeighbors,
   getCrossDirections,
   getAllDirections,
-  mapMatrix
+  mapMatrix,
 } from "functional-game-utils";
 import { clone, times, pipe } from "ramda";
 import {
@@ -18,14 +18,14 @@ import {
   getRandomLocation,
   WeightedMap,
   isTileEmpty,
-  isTileInfected
+  isTileInfected,
 } from "./index";
 
 function lockTiles(tiles, quantity) {
   const locations = times(() => getRandomLocation(tiles), quantity);
 
   let newTiles = clone(tiles);
-  locations.forEach(location => {
+  locations.forEach((location) => {
     const tile = getLocation(tiles, location);
 
     newTiles = updateMatrix(location, { ...tile, locked: true }, newTiles);
@@ -38,7 +38,7 @@ function infectTiles(tiles, quantity) {
   const locations = times(() => getRandomLocation(tiles), quantity);
 
   let newTiles = clone(tiles);
-  locations.forEach(location => {
+  locations.forEach((location) => {
     const tile = getLocation(tiles, location);
 
     newTiles = updateMatrix(location, { ...tile, infected: true }, newTiles);
@@ -47,10 +47,42 @@ function infectTiles(tiles, quantity) {
   return newTiles;
 }
 
-const pickTile = map => {
+const pickTile = (map) => {
   const choices = new WeightedMap(map);
 
   return choices.pickRandom();
+};
+
+const countPositiveNeighbors = (tile, location, tiles) => {
+  const neighbors = getNeighbors(getAllDirections, tiles, location);
+
+  const positiveNeighborCount = neighbors.reduce((count, neighborLocation) => {
+    const neighbor = getLocation(tiles, neighborLocation);
+
+    if (isTilePositive(neighbor)) {
+      return count + 1;
+    }
+
+    return count;
+  }, 0);
+
+  return positiveNeighborCount;
+};
+
+const countDangerousNeighbors = (tile, location, tiles) => {
+  const neighbors = getNeighbors(getAllDirections, tiles, location);
+
+  const dangerousNeighborCount = neighbors.reduce((count, neighborLocation) => {
+    const neighbor = getLocation(tiles, neighborLocation);
+
+    if (isTileDangerous(neighbor)) {
+      return count + 1;
+    }
+
+    return count;
+  }, 0);
+
+  return dangerousNeighborCount;
 };
 
 const countNeighboringIcons = (tile, location, tiles) => {
@@ -87,7 +119,7 @@ const revealConnectedTiles = (tiles, location) => {
 
   const connectedEmptyLocations = floodFill(
     getNeighbors(getCrossDirections),
-    tile =>
+    (tile) =>
       !isTileInfected(tile) &&
       !isTileLocked(tile) &&
       (isTileEmpty(tile) || isTileHouse(tile)),
@@ -102,7 +134,7 @@ const revealConnectedTiles = (tiles, location) => {
   let newTiles = updateMatrix(location, { ...tile, revealed: true }, tiles);
 
   // reveal all connected empty tiles
-  connectedEmptyLocations.forEach(emptyLocation => {
+  connectedEmptyLocations.forEach((emptyLocation) => {
     const emptyTile = getLocation(tiles, emptyLocation);
 
     newTiles = updateMatrix(
@@ -121,21 +153,21 @@ function generateTiles(dimensions, { level }) {
       [tileTypes.BOMB]: 20,
       [tileTypes.GOLD]: 20,
       [tileTypes.HEART]: 2,
-      [tileTypes.EMPTY]: 58
+      [tileTypes.EMPTY]: 58,
     },
     1: {
       [tileTypes.BOMB]: 20,
       [tileTypes.GOLD]: 20,
       [tileTypes.HEART]: 2,
-      [tileTypes.EMPTY]: 58
+      [tileTypes.EMPTY]: 58,
     },
     2: {
       [tileTypes.BOMB]: 20,
       [tileTypes.GOLD]: 10,
       [tileTypes.SOAP]: 10,
       [tileTypes.HEART]: 2,
-      [tileTypes.EMPTY]: 58
-    }
+      [tileTypes.EMPTY]: 58,
+    },
   };
 
   let startingLocation;
@@ -145,10 +177,10 @@ function generateTiles(dimensions, { level }) {
     constructMatrix(() => {
       return {
         icon: pickTile(LEVEL_MAPS[level] || LEVEL_MAPS[0]),
-        revealed: false
+        revealed: false,
       };
     }),
-    tiles => {
+    (tiles) => {
       // pick starting tile
       startingLocation = getRandomLocation(tiles);
       const startingTile = getLocation(tiles, startingLocation);
@@ -160,11 +192,11 @@ function generateTiles(dimensions, { level }) {
       );
     },
     // place items
-    tiles => placeTile(tiles, dimensions, tileTypes.TELESCOPE),
+    (tiles) => placeTile(tiles, dimensions, tileTypes.TELESCOPE),
     // place exit
-    tiles => placeTile(tiles, dimensions, tileTypes.DOOR),
+    (tiles) => placeTile(tiles, dimensions, tileTypes.DOOR),
     // place locks
-    tiles => {
+    (tiles) => {
       if (level !== 1) {
         // only lock tiles on level 1
         return tiles;
@@ -173,7 +205,7 @@ function generateTiles(dimensions, { level }) {
       return lockTiles(tiles, 10);
     },
     // place key
-    tiles => {
+    (tiles) => {
       if (level !== 1) {
         // only lock tiles on level 1
         return tiles;
@@ -181,7 +213,7 @@ function generateTiles(dimensions, { level }) {
 
       return placeTile(tiles, dimensions, tileTypes.KEY);
     },
-    tiles => {
+    (tiles) => {
       if (level !== 2) {
         // only place germs on level 2
         return tiles;
@@ -189,7 +221,7 @@ function generateTiles(dimensions, { level }) {
 
       return infectTiles(tiles, 20);
     },
-    tiles => {
+    (tiles) => {
       if (level !== 2) {
         // only place microscope on level 2
         return tiles;
@@ -204,21 +236,27 @@ function generateTiles(dimensions, { level }) {
       }
 
       const neighborIconCounts = countNeighboringIcons(tile, location, tiles);
+      const positiveNeighbors = countPositiveNeighbors(tile, location, tiles);
+      const dangerousNeighbors = countDangerousNeighbors(tile, location, tiles);
 
       if (neighborIconCounts === 0) {
         return {
           ...tile,
-          icon: tileTypes.EMPTY
+          icon: tileTypes.EMPTY,
         };
       }
 
       return {
         ...tile,
-        icon: "" + neighborIconCounts
+        icon: "" + neighborIconCounts,
+        neighbors: {
+          positive: positiveNeighbors,
+          dangerous: dangerousNeighbors,
+        },
       };
     }),
     // reveal starting tile and connencted tiles
-    tiles => revealConnectedTiles(tiles, startingLocation)
+    (tiles) => revealConnectedTiles(tiles, startingLocation)
   )(dimensions);
 }
 

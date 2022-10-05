@@ -68,6 +68,7 @@ const TileContainer = styled.span`
 
 const Tile = ({
   icon,
+  neighbors,
   revealed,
   revealTile,
   location,
@@ -77,7 +78,7 @@ const Tile = ({
   hovered,
   locked,
   infected,
-  inventory
+  inventory,
 }) => {
   let displayIcon = "";
 
@@ -108,7 +109,7 @@ const Tile = ({
     if (revealed && icon === tileTypes.DOOR) {
       timelineRef.current = gsap.timeline({
         repeat: -1,
-        yoyo: true
+        yoyo: true,
         // repeatRefresh: true
       });
 
@@ -130,7 +131,7 @@ const Tile = ({
       // });
       timelineRef.current.to(tileContaineRef.current, {
         duration: 3,
-        backgroundColor: "#81b0f7" // blue
+        backgroundColor: "#81b0f7", // blue
       });
       // timelineRef.current.to(tileContaineRef.current, {
       //   duration: 1,
@@ -158,19 +159,28 @@ const Tile = ({
         }
       }}
       flagged={flagged}
-      onClick={event => {
+      onClick={(event) => {
         revealTile(location);
       }}
-      onContextMenu={event => {
+      onContextMenu={(event) => {
         event.preventDefault();
         markTile(location, !flagged);
       }}
-      onMouseOver={event => {
+      onMouseOver={(event) => {
         hoverTile(location);
       }}
       ref={tileContaineRef}
     >
-      {displayIcon.includes(".png") ? <img src={displayIcon} /> : displayIcon}
+      {displayIcon.includes(".png") ? (
+        <img src={displayIcon} />
+      ) : neighbors ? (
+        <div>
+          <span style={{ color: "green" }}>{neighbors.positive}</span>
+          <span style={{ color: "red" }}>{neighbors.dangerous}</span>
+        </div>
+      ) : (
+        displayIcon
+      )}
     </TileContainer>
   );
 };
