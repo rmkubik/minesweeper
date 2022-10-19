@@ -15,8 +15,8 @@ import Log from "./components/Log";
 import Inventory from "./components/Inventory";
 import themes from "./utils/themes";
 
-const TILES_WIDE = 10;
-const TILES_HIGH = 10;
+const TILES_WIDE = 15;
+const TILES_HIGH = 15;
 
 const GlobalStyle = createGlobalStyle`
   body {
