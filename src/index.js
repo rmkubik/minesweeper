@@ -8,15 +8,15 @@ import {
   getMatchingLocations,
   isTileEmpty,
   pickRandomlyFromArray,
-  revealTile
+  revealTile,
 } from "./utils/index";
 import Map from "./components/Map";
 import Log from "./components/Log";
 import Inventory from "./components/Inventory";
 import themes from "./utils/themes";
 
-const TILES_WIDE = 15;
-const TILES_HIGH = 15;
+const TILES_WIDE = 10;
+const TILES_HIGH = 10;
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -85,7 +85,7 @@ const App = () => {
   const [actionLog, setActionLog] = useState([]);
   const [level, setLevel] = useState(0);
   const [inventory, setInventory] = useState({
-    [tileTypes.HEART]: { count: 3 }
+    [tileTypes.HEART]: { count: 3 },
   });
   const [theme, setTheme] = useState(themes.minesweeper);
 
@@ -103,7 +103,7 @@ const App = () => {
     }
   }, [level]);
 
-  const modifyIventoryItems = items => {
+  const modifyIventoryItems = (items) => {
     let invCopy = { ...inventory };
 
     items.forEach(([item, increment]) => {
@@ -113,7 +113,7 @@ const App = () => {
     setInventory(invCopy);
   };
 
-  const logAction = messages => {
+  const logAction = (messages) => {
     setActionLog([...actionLog, ...messages]);
   };
 
@@ -123,7 +123,7 @@ const App = () => {
     setTiles(updateMatrix(location, { ...tile, flagged: marked }, tiles));
   };
 
-  const useItem = item => {
+  const useItem = (item) => {
     if (!isItemAvailable(inventory, item)) {
       return;
     }
@@ -133,10 +133,10 @@ const App = () => {
         logAction([
           <p>
             Used <img src={tileTypes.TELESCOPE} />. Reveal random tile.
-          </p>
+          </p>,
         ]);
         const emptyLocations = getMatchingLocations(
-          tile => !tile.revealed && isTileEmpty(tile),
+          (tile) => !tile.revealed && isTileEmpty(tile),
           tiles
         );
 
@@ -156,7 +156,7 @@ const App = () => {
     }
   };
 
-  const handleClick = location => {
+  const handleClick = (location) => {
     const tile = getLocation(tiles, location);
 
     let newTiles = revealTile(tiles, location);
@@ -176,7 +176,7 @@ const App = () => {
           newTiles = generateTiles(
             {
               height: TILES_HIGH,
-              width: TILES_WIDE
+              width: TILES_WIDE,
             },
             { level: level + 1 }
           );
@@ -264,7 +264,7 @@ const App = () => {
           </p>
         );
 
-        newTiles = mapMatrix(tile => ({ ...tile, locked: false }), tiles);
+        newTiles = mapMatrix((tile) => ({ ...tile, locked: false }), tiles);
         break;
       }
       case tileTypes.MICROSCOPE: {
@@ -302,7 +302,7 @@ const App = () => {
     const initialTiles = generateTiles(
       {
         height: TILES_HIGH,
-        width: TILES_WIDE
+        width: TILES_WIDE,
       },
       { level }
     );
@@ -330,11 +330,11 @@ const App = () => {
         <GlobalStyle />
         <Map
           tiles={tiles}
-          revealTile={location => {
+          revealTile={(location) => {
             handleClick(location);
           }}
           markTile={markTile}
-          hoverTile={location => setHovered(location)}
+          hoverTile={(location) => setHovered(location)}
           hovered={hovered}
           width={TILES_WIDE}
           height={TILES_HIGH}

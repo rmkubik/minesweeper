@@ -92,8 +92,12 @@ const Tile = ({
     if (neighbors) {
       displayIcon = (
         <div>
-          <span style={{ color: "green" }}>{neighbors.positive}</span>
-          <span style={{ color: "red" }}>{neighbors.dangerous}</span>
+          {neighbors.positive > 0 ? (
+            <span style={{ color: "green" }}>{neighbors.positive}</span>
+          ) : null}
+          {neighbors.dangerous > 0 ? (
+            <span style={{ color: "red" }}>{neighbors.dangerous}</span>
+          ) : null}
         </div>
       );
     }
