@@ -239,7 +239,7 @@ function generateTiles(dimensions, { level }) {
       const positiveNeighbors = countPositiveNeighbors(tile, location, tiles);
       const dangerousNeighbors = countDangerousNeighbors(tile, location, tiles);
 
-      if (neighborIconCounts === 0) {
+      if (positiveNeighbors + dangerousNeighbors === 0) {
         return {
           ...tile,
           icon: tileTypes.EMPTY,
