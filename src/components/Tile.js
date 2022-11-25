@@ -1,7 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
 import gsap from "gsap";
-import { tileTypes, isTilePositive, isTileDangerous } from "../utils/index";
+import {
+  tileTypes,
+  isTilePositive,
+  isTileDangerous,
+  isTileEmpty,
+} from "../utils/index";
 
 const TileContainer = styled.span`
   border-width: 2px;
@@ -66,6 +71,32 @@ const TileContainer = styled.span`
   }}
 `;
 
+const DisplayIconContainer = styled.div`
+  position: relative;
+  width: ${({ tileSize }) => tileSize}px;
+  height: ${({ tileSize }) => tileSize}px;
+  line-height: ${({ tileSize }) => tileSize}px;
+`;
+
+const PositiveDisplayIconContainer = styled.div`
+  color: ${(props) => (props.positive ? "green" : "lightgray")};
+  line-height: 1rem;
+  width: auto;
+  height: auto;
+  position: absolute;
+  top: 4px;
+  right: 5px;
+`;
+const NegativeDisplayIconContainer = styled.div`
+  color: ${(props) => (props.negative ? "red" : "lightgray")};
+  line-height: 1rem;
+  width: auto;
+  height: auto;
+  position: absolute;
+  left: 3px;
+  bottom: 3px;
+`;
+
 const Tile = ({
   icon,
   neighbors,
@@ -89,16 +120,16 @@ const Tile = ({
   if (revealed) {
     displayIcon = icon;
 
-    if (neighbors) {
+    if (isTileEmpty({ icon })) {
       displayIcon = (
-        <div>
-          {neighbors.positive > 0 ? (
-            <span style={{ color: "green" }}>{neighbors.positive}</span>
-          ) : null}
-          {neighbors.dangerous > 0 ? (
-            <span style={{ color: "red" }}>{neighbors.dangerous}</span>
-          ) : null}
-        </div>
+        <DisplayIconContainer tileSize={32}>
+          <PositiveDisplayIconContainer positive={neighbors.positive > 0}>
+            {neighbors.positive}
+          </PositiveDisplayIconContainer>
+          <NegativeDisplayIconContainer negative={neighbors.dangerous > 0}>
+            {neighbors.dangerous}
+          </NegativeDisplayIconContainer>
+        </DisplayIconContainer>
       );
     }
   }
