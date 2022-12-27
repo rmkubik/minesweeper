@@ -8,15 +8,15 @@ import {
   getMatchingLocations,
   isTileEmpty,
   pickRandomlyFromArray,
-  revealTile
+  revealTile,
 } from "./utils/index";
 import Map from "./components/Map";
 import Log from "./components/Log";
 import Inventory from "./components/Inventory";
 import themes from "./utils/themes";
 
-const TILES_WIDE = 15;
-const TILES_HIGH = 15;
+const INITIAL_TILES_WIDE = 15;
+const INITIAL_TILES_HIGH = 15;
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -85,9 +85,14 @@ const App = () => {
   const [actionLog, setActionLog] = useState([]);
   const [level, setLevel] = useState(0);
   const [inventory, setInventory] = useState({
-    [tileTypes.HEART]: { count: 3 }
+    [tileTypes.HEART]: { count: 3 },
   });
   const [theme, setTheme] = useState(themes.minesweeper);
+  const [dimensions, setDimensions] = useState({
+    width: INITIAL_TILES_WIDE,
+    height: INITIAL_TILES_HIGH,
+  });
+  const [newDimensions, setNewDimensions] = useState(dimensions);
 
   useEffect(() => {
     if (inventory[tileTypes.HEART].count <= 0) {
@@ -103,7 +108,7 @@ const App = () => {
     }
   }, [level]);
 
-  const modifyIventoryItems = items => {
+  const modifyIventoryItems = (items) => {
     let invCopy = { ...inventory };
 
     items.forEach(([item, increment]) => {
@@ -113,7 +118,7 @@ const App = () => {
     setInventory(invCopy);
   };
 
-  const logAction = messages => {
+  const logAction = (messages) => {
     setActionLog([...actionLog, ...messages]);
   };
 
@@ -123,7 +128,7 @@ const App = () => {
     setTiles(updateMatrix(location, { ...tile, flagged: marked }, tiles));
   };
 
-  const useItem = item => {
+  const useItem = (item) => {
     if (!isItemAvailable(inventory, item)) {
       return;
     }
@@ -133,10 +138,10 @@ const App = () => {
         logAction([
           <p>
             Used <img src={tileTypes.TELESCOPE} />. Reveal random tile.
-          </p>
+          </p>,
         ]);
         const emptyLocations = getMatchingLocations(
-          tile => !tile.revealed && isTileEmpty(tile),
+          (tile) => !tile.revealed && isTileEmpty(tile),
           tiles
         );
 
@@ -156,7 +161,7 @@ const App = () => {
     }
   };
 
-  const handleClick = location => {
+  const handleClick = (location) => {
     const tile = getLocation(tiles, location);
 
     let newTiles = revealTile(tiles, location);
@@ -173,13 +178,7 @@ const App = () => {
             </p>
           );
           setLevel(level + 1);
-          newTiles = generateTiles(
-            {
-              height: TILES_HIGH,
-              width: TILES_WIDE
-            },
-            { level: level + 1 }
-          );
+          newTiles = generateTiles(dimensions, { level: level + 1 });
           break;
         default:
           break;
@@ -187,7 +186,7 @@ const App = () => {
 
       setTiles(newTiles);
 
-      // tile already reveealed, no further effect
+      // tile already revealed, no further effect
       return;
     }
 
@@ -264,7 +263,7 @@ const App = () => {
           </p>
         );
 
-        newTiles = mapMatrix(tile => ({ ...tile, locked: false }), tiles);
+        newTiles = mapMatrix((tile) => ({ ...tile, locked: false }), tiles);
         break;
       }
       case tileTypes.MICROSCOPE: {
@@ -299,13 +298,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    const initialTiles = generateTiles(
-      {
-        height: TILES_HIGH,
-        width: TILES_WIDE
-      },
-      { level }
-    );
+    const initialTiles = generateTiles(dimensions, { level });
 
     setTiles(initialTiles);
   }, []);
@@ -330,20 +323,59 @@ const App = () => {
         <GlobalStyle />
         <Map
           tiles={tiles}
-          revealTile={location => {
+          revealTile={(location) => {
             handleClick(location);
           }}
           markTile={markTile}
-          hoverTile={location => setHovered(location)}
+          hoverTile={(location) => setHovered(location)}
           hovered={hovered}
-          width={TILES_WIDE}
-          height={TILES_HIGH}
+          width={dimensions.width}
+          height={dimensions.height}
           inventory={inventory}
         />
         <Panel>
           <Inventory inventory={inventory} useItem={useItem} />
           {/* <p>Inventory: {JSON.stringify(inventory)}</p> */}
           <p>Level: {level}</p>
+        </Panel>
+        <Panel>
+          <label>Width</label>
+          <input
+            type="number"
+            value={newDimensions.width}
+            onChange={(e) => {
+              setNewDimensions({
+                ...newDimensions,
+                width: e.target.value,
+              });
+            }}
+          />
+          <label>Height</label>
+          <input
+            type="number"
+            value={newDimensions.height}
+            onChange={(e) => {
+              console.log(e.target.value);
+              setNewDimensions({
+                ...newDimensions,
+                height: e.target.value,
+              });
+            }}
+          />
+          <button
+            onClick={() => {
+              // Hackily hardcoding this to only re-generate
+              // level 0 for testing purposes.
+              setLevel(0);
+
+              const newTiles = generateTiles(newDimensions, { level: 0 });
+
+              setDimensions(newDimensions);
+              setTiles(newTiles);
+            }}
+          >
+            Generate
+          </button>
         </Panel>
         <Panel>
           <Log messages={actionLog} />

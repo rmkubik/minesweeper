@@ -1,7 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
 import gsap from "gsap";
-import { tileTypes, isTilePositive, isTileDangerous } from "../utils/index";
+import {
+  tileTypes,
+  isTilePositive,
+  isTileDangerous,
+  isTileEmpty,
+} from "../utils/index";
 
 const TileContainer = styled.span`
   border-width: 2px;
@@ -66,8 +71,35 @@ const TileContainer = styled.span`
   }}
 `;
 
+const DisplayIconContainer = styled.div`
+  position: relative;
+  width: ${({ tileSize }) => tileSize}px;
+  height: ${({ tileSize }) => tileSize}px;
+  line-height: ${({ tileSize }) => tileSize}px;
+`;
+
+const PositiveDisplayIconContainer = styled.div`
+  color: ${(props) => (props.positive ? "green" : "lightgray")};
+  line-height: 1rem;
+  width: auto;
+  height: auto;
+  position: absolute;
+  top: 4px;
+  right: 5px;
+`;
+const NegativeDisplayIconContainer = styled.div`
+  color: ${(props) => (props.negative ? "red" : "lightgray")};
+  line-height: 1rem;
+  width: auto;
+  height: auto;
+  position: absolute;
+  left: 3px;
+  bottom: 3px;
+`;
+
 const Tile = ({
   icon,
+  neighbors,
   revealed,
   revealTile,
   location,
@@ -77,7 +109,7 @@ const Tile = ({
   hovered,
   locked,
   infected,
-  inventory
+  inventory,
 }) => {
   let displayIcon = "";
 
@@ -87,6 +119,19 @@ const Tile = ({
 
   if (revealed) {
     displayIcon = icon;
+
+    if (isTileEmpty({ icon })) {
+      displayIcon = (
+        <DisplayIconContainer tileSize={32}>
+          <PositiveDisplayIconContainer positive={neighbors.positive > 0}>
+            {neighbors.positive}
+          </PositiveDisplayIconContainer>
+          <NegativeDisplayIconContainer negative={neighbors.dangerous > 0}>
+            {neighbors.dangerous}
+          </NegativeDisplayIconContainer>
+        </DisplayIconContainer>
+      );
+    }
   }
 
   if (locked && !revealed) {
@@ -108,7 +153,7 @@ const Tile = ({
     if (revealed && icon === tileTypes.DOOR) {
       timelineRef.current = gsap.timeline({
         repeat: -1,
-        yoyo: true
+        yoyo: true,
         // repeatRefresh: true
       });
 
@@ -130,7 +175,7 @@ const Tile = ({
       // });
       timelineRef.current.to(tileContaineRef.current, {
         duration: 3,
-        backgroundColor: "#81b0f7" // blue
+        backgroundColor: "#81b0f7", // blue
       });
       // timelineRef.current.to(tileContaineRef.current, {
       //   duration: 1,
@@ -158,19 +203,23 @@ const Tile = ({
         }
       }}
       flagged={flagged}
-      onClick={event => {
+      onClick={(event) => {
         revealTile(location);
       }}
-      onContextMenu={event => {
+      onContextMenu={(event) => {
         event.preventDefault();
         markTile(location, !flagged);
       }}
-      onMouseOver={event => {
+      onMouseOver={(event) => {
         hoverTile(location);
       }}
       ref={tileContaineRef}
     >
-      {displayIcon.includes(".png") ? <img src={displayIcon} /> : displayIcon}
+      {displayIcon.includes && displayIcon.includes(".png") ? (
+        <img src={displayIcon} />
+      ) : (
+        displayIcon
+      )}
     </TileContainer>
   );
 };
